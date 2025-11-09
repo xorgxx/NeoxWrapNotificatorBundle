@@ -288,8 +288,8 @@ final class WrapNotifyExtension extends AbstractExtension
         if (payload && typeof payload === 'object') {
             title = payload.title || payload.subject || title;
             body = payload.body || payload.message || payload.text || coerceText(payload.data || payload);
-            // Prefer the semantic "level" (or "leve") then fall back to other common keys
-            const rawLevel = payload.level ?? payload.leve ?? payload.type ?? payload.variant ?? payload.status ?? payload.severity ?? payload.kind;
+            // Prefer the semantic "level" then fall back to other common keys
+            const rawLevel = payload.level ?? payload.type ?? payload.variant ?? payload.status ?? payload.severity ?? payload.kind;
             if (typeof rawLevel === 'string') {
                 const v = rawLevel.toLowerCase();
                 if (v === 'info' || v === 'information') variant = 'info';

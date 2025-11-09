@@ -494,7 +494,7 @@ Exemples Twig:
 ```
 
 Variant (style) depuis le payload / Variant detection from payload:
-- Priorité: `level` → `leve` → `type` → `variant` → `status` → `severity` → `kind`.
+- Priorité: `level` → `type` → `variant` → `status` → `severity` → `kind`.
 - Mapping: info | success | warning | danger (défaut: info).
 
 Options UI (payload): `delay|duration|ttl` (ms, 1500–15000), `position` (top-right|top-left|bottom-right|bottom-left), `density` (compact|cozy), `rounded`, `shadow` (sm|md|lg), `glass`, `opacity`, `iconHtml|iconClass|icon|iconUrl`.
