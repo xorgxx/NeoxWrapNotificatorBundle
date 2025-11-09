@@ -28,4 +28,6 @@ stan:
 test:
 	$(PHPUNIT) --colors=always
 
+phpunit: test
+
 ci: cs-check stan test

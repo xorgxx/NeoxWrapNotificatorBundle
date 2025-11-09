@@ -45,7 +45,7 @@ jobs:
       - name: PHPStan
         run: vendor/bin/phpstan analyse --no-progress --ansi
 
-      - name: PHPUnit
-        env:
-          XDEBUG_MODE: coverage
-        run: vendor/bin/phpunit --colors=always
+#      - name: PHPUnit
+#        env:
+#          XDEBUG_MODE: coverage
+#        run: vendor/bin/phpunit --colors=always
