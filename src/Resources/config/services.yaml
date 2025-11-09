@@ -1,0 +1,55 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    # Core factory and sender
+    Neox\WrapNotificatorBundle\Notification\MessageFactory: ~
+
+    Neox\WrapNotificatorBundle\Notification\TypedSender:
+        arguments:
+            $mailer: '@?mailer'
+            $chatter: '@?chatter'
+            $texter: '@?texter'
+            $hub: '@?mercure.hub.default'
+            $webPush: '@?Minishlink\WebPush\WebPush'
+
+    # Dedupe repositories
+    Neox\WrapNotificatorBundle\Infrastructure\Dedupe\InMemoryDedupeRepository: ~
+
+    Neox\WrapNotificatorBundle\Infrastructure\Dedupe\CacheDedupeRepository:
+        arguments:
+            $cache: '@?cache.app'
+
+    # Prefer Cache repository when available
+    Neox\WrapNotificatorBundle\Contract\DedupeRepositoryInterface: '@Neox\WrapNotificatorBundle\Infrastructure\Dedupe\CacheDedupeRepository'
+
+    # Facade
+    Neox\WrapNotificatorBundle\Service\NotifierFacade:
+        arguments:
+            $dedupe: '@?Neox\WrapNotificatorBundle\Contract\DedupeRepositoryInterface'
+            $bus: '@?messenger.bus.default'
+
+    # Alias interface to implementation for sending
+    Neox\WrapNotificatorBundle\Contract\SenderInterface: '@Neox\WrapNotificatorBundle\Notification\TypedSender'
+
+    # Twig extension to expose Mercure listeners in Twig
+    Neox\WrapNotificatorBundle\Twig\WrapNotifyExtension:
+        arguments:
+            $wrap_notificator: '%wrap_notificator.mercure%'
+#            $enabled: '%wrap_notificator.mercure.enabled%'
+#            $turboEnabled: '%wrap_notificator.mercure.turbo_enabled%'
+        tags: ['twig.extension']
+
+    # CLI commands
+    Neox\WrapNotificatorBundle\Command\NotifyCommand:
+        tags: ['console.command']
+
+    # Messenger handler for deferred notifications
+    Neox\WrapNotificatorBundle\Message\Handler\DeferredNotificationHandler: ~
+
+    Neox\WrapNotificatorBundle\Command\DiagnoseCommand:
+        arguments:
+            $hub: '@?mercure.hub.default'
+            $bus: '@?messenger.bus.default'
+        tags: ['console.command']

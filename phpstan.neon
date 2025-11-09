@@ -1,0 +1,11 @@
+parameters:
+  level: 8
+  paths:
+    - src
+    - tests
+  checkMissingIterableValueType: true
+  checkGenericClassInNonGenericObjectType: true
+  checkMissingCallableSignature: true
+  reportUnmatchedIgnoredErrors: true
+  ignoreErrors:
+    - '#final classes cannot be doubled#'

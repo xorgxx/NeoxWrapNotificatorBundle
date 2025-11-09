@@ -1,0 +1,25 @@
+:root{--wrap-toast-bg:#ffffff;--wrap-toast-fg:#1f2328;--wrap-toast-accent:#0d6efd;--wrap-toast-shadow:0 .5rem 1rem rgba(0,0,0,.15)}
+@media (prefers-color-scheme: dark){:root{--wrap-toast-bg:#1e1f24;--wrap-toast-fg:#eaeef2}}
+.wrap-toast{background:var(--wrap-toast-bg);color:var(--wrap-toast-fg);box-shadow:var(--wrap-toast-shadow);border-radius:.5rem;overflow:hidden;position:relative}
+.wrap-toast .toast-header{background:transparent;border:0}
+.wrap-toast .wrap-toast-progress{background:var(--wrap-toast-accent);height:3px;position:absolute;left:0;top:0;width:100%}
+.wrap-toast .wrap-toast-accent{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--wrap-toast-accent)}
+.wrap-toast.is-info{--wrap-toast-accent:#0d6efd}
+.wrap-toast.is-success{--wrap-toast-accent:#198754}
+.wrap-toast.is-warning{--wrap-toast-accent:#b88600}
+.wrap-toast.is-danger{--wrap-toast-accent:#dc3545}
+.wrap-toast.wrap-toast-compact .toast-header,.wrap-toast.wrap-toast-compact .toast-body{padding-top:.5rem;padding-bottom:.5rem}
+.wrap-toast.glass{background:color-mix(in srgb, var(--wrap-toast-bg) 85%, transparent);backdrop-filter:saturate(180%) blur(8px)}
+@media (prefers-reduced-motion: reduce){.wrap-toast .wrap-toast-progress{transition:none}}
+/* Toast container base layout */
+#wrap-toast-container{position:fixed;z-index:1080;display:flex;flex-direction:column;gap:.5rem}
+/* Extended styles moved from JS inline styles */
+.wrap-toast{position:relative;max-width:360px;width:min(90vw,360px)}
+.wrap-toast .toast-header{gap:.5rem}
+.wrap-toast .wrap-toast-icon{display:inline-flex;align-items:center;justify-content:center;width:1.25rem;height:1.25rem;opacity:.95;flex:0 0 auto}
+.wrap-toast .wrap-toast-icon i{font-size:1.1rem}
+.wrap-toast .wrap-toast-icon img{max-width:1.25rem;max-height:1.25rem;object-fit:contain}
+/* Optional visual variants controlled by classes */
+.wrap-toast.wrap-shadow-sm{box-shadow:0 .125rem .25rem rgba(0,0,0,.15)}
+.wrap-toast.wrap-shadow-lg{box-shadow:0 1rem 3rem rgba(0,0,0,.175)}
+.wrap-toast.wrap-rounded-sm{border-radius:.25rem}
