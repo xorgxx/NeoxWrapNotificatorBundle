@@ -17,6 +17,7 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
+use Symfony\Component\Messenger\Stamp\StampInterface;
 use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
 
 // ... existing code ...
@@ -83,9 +84,13 @@ final class DiagnoseCommand extends Command
                         'message' => 'Mercure diagnostic ping',
                         'time' => (new DateTimeImmutable())->format('c'),
                     ];
+                    $payloadJson = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                    if ($payloadJson === false) {
+                        $payloadJson = '{}';
+                    }
                     $update = new Update(
                         $report['mercure']['topic'],
-                        json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+                        $payloadJson
                     );
                     $id = $this->hub->publish($update);
                     $report['mercure']['published'] = true;
@@ -108,6 +113,7 @@ final class DiagnoseCommand extends Command
                 try {
                     $message = new DiagPing(); // classe dédiée (plus d’anonyme)
                     $stamps = $this->buildStampsFromInput($input);
+                    /** @var list<StampInterface> $stamps */
                     /** @var Envelope $envelope */
                     $envelope = $this->bus->dispatch($message, $stamps);
                     $report['messenger']['dispatched'] = true;
@@ -146,7 +152,7 @@ final class DiagnoseCommand extends Command
         if ($report['mercure']['available']) {
             $status = $report['mercure']['published'] ? 'OK' : 'NOT PUBLISHED';
             $icon = $report['mercure']['published'] ? '✔' : '✖';
-            $io->writeln(sprintf('%s Hub available', $report['mercure']['available'] ? '✔' : '✖'));
+            $io->writeln('✔ Hub available');
             $io->writeln(sprintf('%s Published: %s', $icon, $status));
             if (!empty($report['mercure']['topic'])) {
                 $io->writeln(sprintf('• Topic: %s', $report['mercure']['topic']));
@@ -164,10 +170,10 @@ final class DiagnoseCommand extends Command
         // Messenger pretty section
         $io->section('Messenger');
         if ($report['messenger']['available']) {
-            $io->writeln(sprintf('%s Bus available', $report['messenger']['available'] ? '✔' : '✖'));
+            $io->writeln('✔ Bus available');
             $io->writeln(sprintf('%s Dispatched: %s', $report['messenger']['dispatched'] ? '✔' : '✖', $report['messenger']['dispatched'] ? 'YES' : 'NO'));
             if (!empty($report['messenger']['transportNames'])) {
-                $tn = is_array($report['messenger']['transportNames']) ? implode(', ', $report['messenger']['transportNames']) : (string) $report['messenger']['transportNames'];
+                $tn = implode(', ', (array) $report['messenger']['transportNames']);
                 $io->writeln(sprintf('• Transports: %s', $tn));
             }
             $io->writeln(sprintf('%s Handled by handler: %s', $report['messenger']['handled'] ? '✔' : '✖', $report['messenger']['handled'] ? 'YES' : 'NO'));
@@ -190,7 +196,7 @@ final class DiagnoseCommand extends Command
 
     /**
      * Extrait: construit les stamps Messenger à partir des options CLI.
-     * @return array<int, object>
+     * @return list<StampInterface>
      */
     private function buildStampsFromInput(InputInterface $input): array
     {

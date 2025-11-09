@@ -5,8 +5,10 @@ COMPOSER_UPDATE = $(COMPOSER) update
 #------------#
 PHP="D:\SERVER-WEB\wamp64\bin\php\php8.3.10\php.exe"
 PHPUNIT=$(PHP) vendor/bin/phpunit
-PHPSTAN=$(PHP) vendor/bin/phpstan
+PHPSTAN=$(PHP) -d memory_limit=$(MEMORY_LIMIT) vendor/bin/phpstan
 CS_FIXER=$(PHP) vendor/bin/php-cs-fixer
+
+MEMORY_LIMIT ?= 512M
 
 install:
 	$(COMPOSER) install --prefer-dist --no-progress --no-interaction

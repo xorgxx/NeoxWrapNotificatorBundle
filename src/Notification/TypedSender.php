@@ -6,7 +6,7 @@ namespace Neox\WrapNotificatorBundle\Notification;
 
 use Minishlink\WebPush\Subscription;
 use Minishlink\WebPush\WebPush;
-use Symfony\Component\HttpClient\Exception\TransportExceptionInterface as HttpTransportExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface as HttpTransportExceptionInterface;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mercure\HubInterface;
@@ -16,7 +16,7 @@ use Symfony\Component\Notifier\ChatterInterface;
 use Symfony\Component\Notifier\Message\ChatMessage;
 use Symfony\Component\Notifier\Message\SmsMessage;
 use Symfony\Component\Notifier\TexterInterface;
-use Symfony\Component\Notifier\Transport\TransportExceptionInterface as NotifierTransportExceptionInterface;
+use Symfony\Component\Notifier\Exception\TransportExceptionInterface as NotifierTransportExceptionInterface;
 
 final class TypedSender implements \Neox\WrapNotificatorBundle\Contract\SenderInterface
 {
@@ -89,7 +89,7 @@ final class TypedSender implements \Neox\WrapNotificatorBundle\Contract\SenderIn
                 data: $json,
             );
             $id = $this->hub->publish($update);
-            $idStr = is_string($id) ? $id : null;
+            $idStr = (string) $id;
             return DeliveryStatus::sent('browser', $idStr);
         } catch (HttpTransportExceptionInterface $e) {
             return DeliveryStatus::failed('browser', $e->getMessage());

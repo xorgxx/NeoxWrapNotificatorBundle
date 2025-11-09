@@ -25,7 +25,7 @@ class NotifierFacade
         private readonly SenderInterface $sender,
         private readonly ?DedupeRepositoryInterface $dedupe = null,
         private readonly ?\Symfony\Component\Messenger\MessageBusInterface $bus = null,
-        private readonly \Twig\Environment $twig,
+        private readonly ?\Twig\Environment $twig = null,
     ) {
     }
 
@@ -45,9 +45,11 @@ class NotifierFacade
             $template = $opts['template'] ?? null;
             if (is_string($template) && $template !== '') {
                 $vars = is_array($opts['vars'] ?? null) ? $opts['vars'] : [];
-                $htmlOrText = $this->twig->render($template, $vars);
-                $isHtml = true;
-                $opts['html'] = true;
+                if ($this->twig !== null) {
+                    $htmlOrText = $this->twig->render($template, $vars);
+                    $isHtml = true;
+                    $opts['html'] = true;
+                }
             }
 
             // Deferred scheduling

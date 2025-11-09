@@ -21,7 +21,9 @@
     "minishlink/web-push": "^7.0|^8.0",
     "phpstan/phpstan": "^1.11",
     "symfony/slack-notifier": "^7.0",
-    "symfony/telegram-notifier": "^7.0"
+    "symfony/telegram-notifier": "^7.0",
+    "symfony/messenger": "^7.0",
+    "twig/twig": "^3.0"
   },
   "suggest": {
     "symfony/messenger": "For async notifications",

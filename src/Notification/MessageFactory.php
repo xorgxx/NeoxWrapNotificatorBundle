@@ -29,7 +29,7 @@ final class MessageFactory
 
         if (isset($opts['from'])) {
             $from = $opts['from'];
-            $email = $email->from(new Address($from[0], $from[1] ?? null));
+            $email = $email->from(new Address($from[0], (string)($from[1] ?? '')));
         }
 
         $isHtml = $opts['html'] ?? true;
@@ -40,8 +40,10 @@ final class MessageFactory
         }
 
         // Attachments (auto-detection)
-        if (!empty($opts['attachments']) && is_array($opts['attachments'])) {
-            foreach ($opts['attachments'] as $item) {
+        /** @var list<mixed> $attachments */
+        $attachments = is_array($opts['attachments'] ?? null) ? $opts['attachments'] : [];
+        if ($attachments !== []) {
+            foreach ($attachments as $item) {
                 $norm = $this->normalizeAttachment($item, false);
                 if ($norm === null) {
                     continue;
@@ -55,8 +57,10 @@ final class MessageFactory
         }
 
         // Inline images/files (CID auto)
-        if (!empty($opts['inline']) && is_array($opts['inline'])) {
-            foreach ($opts['inline'] as $item) {
+        /** @var list<mixed> $inline */
+        $inline = is_array($opts['inline'] ?? null) ? $opts['inline'] : [];
+        if ($inline !== []) {
+            foreach ($inline as $item) {
                 $norm = $this->normalizeAttachment($item, true);
                 if ($norm === null) {
                     continue;
@@ -65,7 +69,7 @@ final class MessageFactory
                 if ($norm['mode'] === 'path') {
                     $email->embedFromPath($norm['path'], $cid, $norm['mime']);
                 } else {
-                    $email->embed($norm['content'], $norm['name'], $norm['mime'], $cid);
+                    $email->embed($norm['content'], $cid ?? $norm['name'], $norm['mime']);
                 }
             }
         }
@@ -77,7 +81,7 @@ final class MessageFactory
      * Normalize an attachment or inline item.
      * @return array|null {mode: 'path'|'bin', path?:string, content?:string, name:string, mime:string, cid?:string, icon:string}
      */
-    private function normalizeAttachment(string|array $item, bool $inline): ?array
+    private function normalizeAttachment(mixed $item, bool $inline): ?array
     {
         $name = null;
         $mime = null;
@@ -94,7 +98,7 @@ final class MessageFactory
             $name = basename($path) ?: 'attachment.bin';
             $mime = $this->guessMimeFromPathOrName($path, $name);
             $icon = $this->guessIcon($mime, $name);
-            if ($inline && !$cid) {
+            if ($inline) {
                 $cid = pathinfo($name, PATHINFO_FILENAME) ?: uniqid('cid_', true);
             }
             return ['mode' => $mode,'path' => $path,'name' => $name,'mime' => $mime,'cid' => $cid,'icon' => $icon];
@@ -205,14 +209,13 @@ final class MessageFactory
         if ($transport === 'slack') {
             $options = new SlackOptions();
             if (isset($opts['channel'])) {
-                $options = $options->channel((string) $opts['channel']);
+                // Map legacy 'channel' option to Slack recipient id (webhook id)
+                $options = $options->recipient((string) $opts['channel']);
             }
             if (isset($opts['iconEmoji'])) {
                 $options = $options->iconEmoji((string) $opts['iconEmoji']);
             }
-            if (isset($opts['blocks']) && is_array($opts['blocks'])) {
-                $options = $options->blocks($opts['blocks']);
-            }
+            // 'blocks' option is ignored in this lightweight mapping to avoid depending on Slack block classes
             $message->options($options);
         } elseif ($transport === 'telegram') {
             $options = new TelegramOptions();

@@ -38,10 +38,4 @@ final class WrapNotificatorExtension extends Extension
         $loader->load('services.yaml');
     }
 
-    private function setParamIfAbsent(ContainerBuilder $container, string $name, mixed $value): void
-    {
-        if (!$container->hasParameter($name)) {
-            $container->setParameter($name, $value);
-        }
-    }
 }

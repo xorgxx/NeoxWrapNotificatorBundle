@@ -85,9 +85,9 @@ final class NotifierFacadeTest extends TestCase
         $arr = $status->toArray();
 
         self::assertSame('queued', $arr['status']);
-        self::assertSame('sms', $arr['channel'] ?? 'sms');
-        self::assertArrayHasKey('deferAt', $arr['metadata'] ?? []);
-        self::assertSame('asyncRabbitMq', $arr['metadata']['transport'] ?? null);
+        self::assertSame('sms', $arr['channel']);
+        self::assertArrayHasKey('deferAt', $arr['metadata']);
+        self::assertSame('asyncRabbitMq', $arr['metadata']['transport']);
     }
 
     #[Test]
@@ -187,6 +187,6 @@ final class NotifierFacadeTest extends TestCase
 
         $arr = $status->toArray();
         self::assertSame('failed', $arr['status']);
-        self::assertSame('sms', $arr['channel'] ?? null);
+        self::assertSame('sms', $arr['channel']);
     }
 }
