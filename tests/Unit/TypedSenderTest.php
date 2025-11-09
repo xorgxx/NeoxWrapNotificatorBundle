@@ -71,18 +71,10 @@ final class TypedSenderTest extends TestCase
         if (!class_exists(WebPush::class)) {
             self::markTestSkipped('minishlink/web-push not installed in this project');
         }
-        $fakeReport = new class () {
-            public function isSuccess(): bool
-            {
-                return false;
-            }
-            public function getReason(): string
-            {
-                return 'invalid token';
-            }
-        };
+        $request = $this->createMock(\Psr\Http\Message\RequestInterface::class);
+        $report = new \Minishlink\WebPush\MessageSentReport($request, null, false, 'invalid token');
         $webPush = $this->createMock(WebPush::class);
-        $webPush->method('sendOneNotification')->willReturn($fakeReport);
+        $webPush->method('sendOneNotification')->willReturn($report);
 
         $sender = new TypedSender(null, null, null, null, $webPush);
         $msg = new WebPushMessage('https://ep', 'p', 'a', '{"hi":1}', 60);
