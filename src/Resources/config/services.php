@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use Minishlink\WebPush\WebPush;
-use Psr\Cache\CacheItemPoolInterface;
 use Neox\WrapNotificatorBundle\Command\DiagnoseCommand;
 use Neox\WrapNotificatorBundle\Command\NotifyCommand;
 use Neox\WrapNotificatorBundle\Contract\DedupeRepositoryInterface;

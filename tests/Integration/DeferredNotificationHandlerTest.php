@@ -7,12 +7,11 @@ namespace Neox\WrapNotificatorBundle\Tests\Integration;
 use Neox\WrapNotificatorBundle\Message\DeferredNotification;
 use Neox\WrapNotificatorBundle\Message\Handler\DeferredNotificationHandler;
 use Neox\WrapNotificatorBundle\Notification\MessageFactory;
-use Neox\WrapNotificatorBundle\Contract\SenderInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Notifier\Message\ChatMessage;
 use Symfony\Component\Notifier\Message\SmsMessage;
-use Symfony\Component\Mime\Email;
 
 final class DeferredNotificationHandlerTest extends TestCase
 {

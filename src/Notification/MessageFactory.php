@@ -6,10 +6,10 @@ namespace Neox\WrapNotificatorBundle\Notification;
 
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
-use Symfony\Component\Notifier\Message\ChatMessage;
-use Symfony\Component\Notifier\Message\SmsMessage;
 use Symfony\Component\Notifier\Bridge\Slack\SlackOptions;
 use Symfony\Component\Notifier\Bridge\Telegram\TelegramOptions;
+use Symfony\Component\Notifier\Message\ChatMessage;
+use Symfony\Component\Notifier\Message\SmsMessage;
 
 final class MessageFactory
 {
@@ -75,7 +75,6 @@ final class MessageFactory
 
     /**
      * Normalize an attachment or inline item.
-     * @param string|array $item
      * @return array|null {mode: 'path'|'bin', path?:string, content?:string, name:string, mime:string, cid?:string, icon:string}
      */
     private function normalizeAttachment(string|array $item, bool $inline): ?array
@@ -98,7 +97,7 @@ final class MessageFactory
             if ($inline && !$cid) {
                 $cid = pathinfo($name, PATHINFO_FILENAME) ?: uniqid('cid_', true);
             }
-            return ['mode'=>$mode,'path'=>$path,'name'=>$name,'mime'=>$mime,'cid'=>$cid,'icon'=>$icon];
+            return ['mode' => $mode,'path' => $path,'name' => $name,'mime' => $mime,'cid' => $cid,'icon' => $icon];
         }
 
         if (is_array($item)) {
@@ -131,9 +130,9 @@ final class MessageFactory
             $icon = $this->guessIcon($mime, $name);
 
             if ($mode === 'path') {
-                return ['mode'=>'path','path'=>$path,'name'=>$name,'mime'=>$mime,'cid'=>$cid,'icon'=>$icon];
+                return ['mode' => 'path','path' => $path,'name' => $name,'mime' => $mime,'cid' => $cid,'icon' => $icon];
             }
-            return ['mode'=>'bin','content'=>$content,'name'=>$name,'mime'=>$mime,'cid'=>$cid,'icon'=>$icon];
+            return ['mode' => 'bin','content' => $content,'name' => $name,'mime' => $mime,'cid' => $cid,'icon' => $icon];
         }
 
         return null;

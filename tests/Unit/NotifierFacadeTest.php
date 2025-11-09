@@ -13,14 +13,13 @@ use Neox\WrapNotificatorBundle\Service\NotifierFacade;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Mailer\Messenger\SendEmailMessage;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
-use Symfony\Component\Mailer\Messenger\SendEmailMessage;
 use Symfony\Component\Notifier\Message\ChatMessage;
 use Symfony\Component\Notifier\Message\SmsMessage;
-use Symfony\Component\Mercure\Update;
 
 #[CoversClass(NotifierFacade::class)]
 final class NotifierFacadeTest extends TestCase
@@ -135,7 +134,8 @@ final class NotifierFacadeTest extends TestCase
                     $found = false;
                     foreach ($stamps as $s) {
                         if ($s instanceof TransportNamesStamp && in_array('asyncRabbitMq', $s->getTransportNames(), true)) {
-                            $found = true; break;
+                            $found = true;
+                            break;
                         }
                     }
                     return $found;

@@ -6,8 +6,8 @@ namespace Neox\WrapNotificatorBundle\Tests\Unit;
 
 use Neox\WrapNotificatorBundle\Contract\DedupeRepositoryInterface;
 use Neox\WrapNotificatorBundle\Contract\SenderInterface;
-use Neox\WrapNotificatorBundle\Notification\MessageFactory;
 use Neox\WrapNotificatorBundle\Notification\DeliveryContext;
+use Neox\WrapNotificatorBundle\Notification\MessageFactory;
 use Neox\WrapNotificatorBundle\Service\NotifierFacade;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

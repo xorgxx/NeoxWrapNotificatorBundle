@@ -9,14 +9,14 @@ use Neox\WrapNotificatorBundle\Contract\SenderInterface;
 use Neox\WrapNotificatorBundle\Notification\DeliveryContext;
 use Neox\WrapNotificatorBundle\Notification\DeliveryStatus;
 use Neox\WrapNotificatorBundle\Notification\MessageFactory;
+use Symfony\Component\Mailer\Messenger\SendEmailMessage;
+use Symfony\Component\Mercure\Update;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
-use Symfony\Component\Mailer\Messenger\SendEmailMessage;
 use Symfony\Component\Notifier\Message\ChatMessage;
 use Symfony\Component\Notifier\Message\SmsMessage;
-use Symfony\Component\Mercure\Update;
 
 class NotifierFacade
 {
@@ -70,7 +70,7 @@ class NotifierFacade
                 if ($fail = $this->requireBusOrFail('email', $metadata, $ctx, 'Forcing transport requires Messenger. MessageBus not available.')) {
                     return $fail;
                 }
-                return $this->forcedTransportCommon('email', $metadata, $ctx, fn() => $this->factory->email($subject, $htmlOrText, $to, $opts), true);
+                return $this->forcedTransportCommon('email', $metadata, $ctx, fn () => $this->factory->email($subject, $htmlOrText, $to, $opts), true);
             }
 
             // Direct send
@@ -109,7 +109,7 @@ class NotifierFacade
                 if ($fail = $this->requireBusOrFail('sms', $metadata, $ctx, 'Forcing transport requires Messenger. MessageBus not available.')) {
                     return $fail;
                 }
-                return $this->forcedTransportCommon('sms', $metadata, $ctx, fn() => $this->factory->sms($content, $to));
+                return $this->forcedTransportCommon('sms', $metadata, $ctx, fn () => $this->factory->sms($content, $to));
             }
 
             // Direct send
@@ -151,7 +151,7 @@ class NotifierFacade
                 if ($fail = $this->requireBusOrFail('chat', $metadata, $ctx, 'Forcing transport requires Messenger. MessageBus not available.')) {
                     return $fail;
                 }
-                return $this->forcedTransportCommon('chat', $metadata, $ctx, fn() => $this->factory->chat($transport, $content, $subject, $opts));
+                return $this->forcedTransportCommon('chat', $metadata, $ctx, fn () => $this->factory->chat($transport, $content, $subject, $opts));
             }
 
             // Direct send
@@ -193,7 +193,9 @@ class NotifierFacade
                 }
                 return $this->forcedTransportCommon('browser', $metadata, $ctx, function () use ($topic, $data) {
                     $json = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-                    if ($json === false) { $json = '{}'; }
+                    if ($json === false) {
+                        $json = '{}';
+                    }
                     return new Update($topic, $json);
                 });
             }

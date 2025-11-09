@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Neox\WrapNotificatorBundle\Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
 use Neox\WrapNotificatorBundle\Infrastructure\Dedupe\InMemoryDedupeRepository;
+use PHPUnit\Framework\TestCase;
 
 final class DedupeRepositoryTest extends TestCase
 {

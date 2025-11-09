@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Neox\WrapNotificatorBundle\Tests\Unit;
 
 use Minishlink\WebPush\WebPush;
+use Neox\WrapNotificatorBundle\Notification\BrowserPayload;
+use Neox\WrapNotificatorBundle\Notification\TypedSender;
+use Neox\WrapNotificatorBundle\Notification\WebPushMessage;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Update;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Notifier\ChatterInterface;
 use Symfony\Component\Notifier\Message\ChatMessage;
 use Symfony\Component\Notifier\Message\SmsMessage;
-use Symfony\Component\Mercure\HubInterface;
-use Symfony\Component\Mercure\Update;
-use Neox\WrapNotificatorBundle\Notification\BrowserPayload;
-use Neox\WrapNotificatorBundle\Notification\TypedSender;
-use Neox\WrapNotificatorBundle\Notification\WebPushMessage;
 
 final class TypedSenderTest extends TestCase
 {
@@ -71,9 +71,15 @@ final class TypedSenderTest extends TestCase
         if (!class_exists(WebPush::class)) {
             self::markTestSkipped('minishlink/web-push not installed in this project');
         }
-        $fakeReport = new class {
-            public function isSuccess(): bool { return false; }
-            public function getReason(): string { return 'invalid token'; }
+        $fakeReport = new class () {
+            public function isSuccess(): bool
+            {
+                return false;
+            }
+            public function getReason(): string
+            {
+                return 'invalid token';
+            }
         };
         $webPush = $this->createMock(WebPush::class);
         $webPush->method('sendOneNotification')->willReturn($fakeReport);

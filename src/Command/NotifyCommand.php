@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Neox\WrapNotificatorBundle\Command;
 
+use Neox\WrapNotificatorBundle\Notification\DeliveryContext;
+use Neox\WrapNotificatorBundle\Notification\DeliveryStatus;
+use Neox\WrapNotificatorBundle\Service\NotifierFacade;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Neox\WrapNotificatorBundle\Notification\DeliveryContext;
-use Neox\WrapNotificatorBundle\Notification\DeliveryStatus;
-use Neox\WrapNotificatorBundle\Service\NotifierFacade;
 
 #[AsCommand(name: 'notify:send', description: 'Send a notification through a selected channel and print the DeliveryStatus JSON')]
 final class NotifyCommand extends Command
@@ -138,21 +138,37 @@ HELP);
             'Channel' => $channel,
         ];
         $to = $input->getOption('to');
-        if (is_string($to) && $to !== '') { $summary['To'] = $to; }
+        if (is_string($to) && $to !== '') {
+            $summary['To'] = $to;
+        }
         $subject = $input->getOption('subject');
-        if (is_string($subject) && $subject !== '') { $summary['Subject'] = $subject; }
+        if (is_string($subject) && $subject !== '') {
+            $summary['Subject'] = $subject;
+        }
         $transport = $input->getOption('transport');
-        if (is_string($transport) && $transport !== '') { $summary['Transport'] = $transport; }
+        if (is_string($transport) && $transport !== '') {
+            $summary['Transport'] = $transport;
+        }
         $topic = $input->getOption('topic');
-        if (is_string($topic) && $topic !== '') { $summary['Topic'] = $topic; }
+        if (is_string($topic) && $topic !== '') {
+            $summary['Topic'] = $topic;
+        }
         $ttl = $input->getOption('ttl');
-        if (is_numeric($ttl)) { $summary['TTL'] = (int) $ttl.'s'; }
+        if (is_numeric($ttl)) {
+            $summary['TTL'] = (int) $ttl.'s';
+        }
         $corr = $input->getOption('correlation-id');
-        if (is_string($corr) && $corr !== '') { $summary['CorrelationId'] = $corr; }
+        if (is_string($corr) && $corr !== '') {
+            $summary['CorrelationId'] = $corr;
+        }
         $dedupe = $input->getOption('dedupe-key');
-        if (is_string($dedupe) && $dedupe !== '') { $summary['DedupeKey'] = $dedupe; }
+        if (is_string($dedupe) && $dedupe !== '') {
+            $summary['DedupeKey'] = $dedupe;
+        }
         $dedupeTtl = $input->getOption('dedupe-ttl');
-        if (is_numeric($dedupeTtl)) { $summary['Dedupe TTL'] = (int) $dedupeTtl.'s'; }
+        if (is_numeric($dedupeTtl)) {
+            $summary['Dedupe TTL'] = (int) $dedupeTtl.'s';
+        }
         foreach ($summary as $k => $v) {
             $io->writeln(sprintf('• %s: %s', $k, (string) $v));
         }

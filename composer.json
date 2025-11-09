@@ -42,5 +42,12 @@
     "branch-alias": {
       "dev-main": "1.0-dev"
     }
-  }
+  },
+    "scripts": {
+        "test": "@php -d zend.assertions=1 -d assert.exception=1 vendor/bin/phpunit -c phpunit.xml.dist",
+        "test:coverage": "@php -d xdebug.mode=coverage -d zend.assertions=1 -d assert.exception=1 vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover var/coverage.xml --coverage-text",
+        "cs-fix": "@php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php",
+        "lint": "@php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --dry-run --diff",
+        "analyse": "@php vendor/bin/phpstan analyse --configuration=phpstan.neon.dist"
+    }
 }

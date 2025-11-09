@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Neox\WrapNotificatorBundle\Infrastructure\Dedupe;
 
-use Psr\Cache\CacheItemPoolInterface;
 use Neox\WrapNotificatorBundle\Contract\DedupeRepositoryInterface;
+use Psr\Cache\CacheItemPoolInterface;
 
 final class CacheDedupeRepository implements DedupeRepositoryInterface
 {

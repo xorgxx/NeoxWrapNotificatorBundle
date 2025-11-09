@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Neox\WrapNotificatorBundle\Contract;
 
-use Symfony\Component\Mime\Email;
-use Symfony\Component\Notifier\Message\ChatMessage;
-use Symfony\Component\Notifier\Message\SmsMessage;
 use Neox\WrapNotificatorBundle\Notification\BrowserPayload;
 use Neox\WrapNotificatorBundle\Notification\DeliveryStatus;
 use Neox\WrapNotificatorBundle\Notification\WebPushMessage;
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Notifier\Message\ChatMessage;
+use Symfony\Component\Notifier\Message\SmsMessage;
 
 interface SenderInterface
 {

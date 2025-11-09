@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Neox\WrapNotificatorBundle\Tests\Integration;
 
+use Neox\WrapNotificatorBundle\Command\NotifyCommand;
+use Neox\WrapNotificatorBundle\Notification\DeliveryContext;
+use Neox\WrapNotificatorBundle\Notification\DeliveryStatus;
+use Neox\WrapNotificatorBundle\Service\NotifierFacade;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
-use Neox\WrapNotificatorBundle\Command\NotifyCommand;
-use Neox\WrapNotificatorBundle\Notification\DeliveryStatus;
-use Neox\WrapNotificatorBundle\Service\NotifierFacade;
-use Neox\WrapNotificatorBundle\Notification\DeliveryContext;
 
 final class NotifyCommandTransportTest extends TestCase
 {

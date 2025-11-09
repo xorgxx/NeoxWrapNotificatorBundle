@@ -1,7 +1,12 @@
-COMPOSER=composer
-PHPUNIT=vendor/bin/phpunit
-PHPSTAN=vendor/bin/phpstan
-CS_FIXER=vendor/bin/php-cs-fixer
+#---COMPOSER-#
+COMPOSER = composer
+COMPOSER_INSTALL = $(COMPOSER) install
+COMPOSER_UPDATE = $(COMPOSER) update
+#------------#
+PHP="D:\SERVER-WEB\wamp64\bin\php\php8.3.10\php.exe"
+PHPUNIT=$(PHP) vendor/bin/phpunit
+PHPSTAN=$(PHP) vendor/bin/phpstan
+CS_FIXER=$(PHP) vendor/bin/php-cs-fixer
 
 install:
 	$(COMPOSER) install --prefer-dist --no-progress --no-interaction

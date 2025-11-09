@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Neox\WrapNotificatorBundle\Message\Handler;
 
+use Neox\WrapNotificatorBundle\Contract\SenderInterface;
 use Neox\WrapNotificatorBundle\Message\DeferredNotification;
 use Neox\WrapNotificatorBundle\Notification\MessageFactory;
-use Neox\WrapNotificatorBundle\Contract\SenderInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]

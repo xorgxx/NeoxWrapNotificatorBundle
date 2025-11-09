@@ -9,16 +9,14 @@ use Minishlink\WebPush\WebPush;
 use Symfony\Component\HttpClient\Exception\TransportExceptionInterface as HttpTransportExceptionInterface;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Update;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Notifier\ChatterInterface;
 use Symfony\Component\Notifier\Message\ChatMessage;
 use Symfony\Component\Notifier\Message\SmsMessage;
 use Symfony\Component\Notifier\TexterInterface;
 use Symfony\Component\Notifier\Transport\TransportExceptionInterface as NotifierTransportExceptionInterface;
-use Symfony\Component\Notifier\Transport\TransportInterface as NotifierTransportInterface;
-use Symfony\Component\Uid\Uuid;
-use Symfony\Component\Mercure\HubInterface;
-use Symfony\Component\Mercure\Update;
 
 final class TypedSender implements \Neox\WrapNotificatorBundle\Contract\SenderInterface
 {

@@ -4,22 +4,24 @@ declare(strict_types=1);
 
 namespace Neox\WrapNotificatorBundle\Tests\Integration;
 
+use Neox\WrapNotificatorBundle\Command\NotifyCommand;
+use Neox\WrapNotificatorBundle\Notification\DeliveryContext;
+use Neox\WrapNotificatorBundle\Notification\DeliveryStatus;
+use Neox\WrapNotificatorBundle\Service\NotifierFacade;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
-use Neox\WrapNotificatorBundle\Command\NotifyCommand;
-use Neox\WrapNotificatorBundle\Notification\DeliveryStatus;
-use Neox\WrapNotificatorBundle\Service\NotifierFacade;
-use Neox\WrapNotificatorBundle\Notification\DeliveryContext;
 
 final class NotifyCommandDedupeTest extends TestCase
 {
     public function testDedupeKeyTwiceFirstSentSecondQueued(): void
     {
-        $facade = new class extends NotifierFacade {
+        $facade = new class () extends NotifierFacade {
             private int $count = 0;
-            public function __construct() {}
-            public function notifySms(string $content, string $to, array $metadata = [], ? DeliveryContext $ctx = null): DeliveryStatus
+            public function __construct()
+            {
+            }
+            public function notifySms(string $content, string $to, array $metadata = [], ?DeliveryContext $ctx = null): DeliveryStatus
             {
                 $this->count++;
                 if ($this->count === 1) {

@@ -24,13 +24,13 @@ final class WrapNotificatorExtension extends Extension
 
 
         // 2) Expose processed configuration as container parameters (do not override if already defined by app)
-//        $mercure = $config['mercure'] ?? [];
-//        $this->setParamIfAbsent($container, 'wrap_notificator.mercure.enabled', (bool)($mercure['enabled'] ?? true));
-//        $this->setParamIfAbsent($container, 'wrap_notificator.mercure.auto_inject', (bool)($mercure['auto_inject'] ?? false));
-//        $this->setParamIfAbsent($container, 'wrap_notificator.mercure.turbo_enabled', (bool)($mercure['turbo_enabled'] ?? false));
-//        $this->setParamIfAbsent($container, 'wrap_notificator.mercure.only_authenticated', (bool)($mercure['only_authenticated'] ?? false));
-//        $this->setParamIfAbsent($container, 'wrap_notificator.mercure.public_url', (string)($mercure['public_url'] ?? '%env(string:MERCURE_PUBLIC_URL)%'));
-//        $this->setParamIfAbsent($container, 'wrap_notificator.mercure.default_topics', (array)($mercure['default_topics'] ?? []));
+        //        $mercure = $config['mercure'] ?? [];
+        //        $this->setParamIfAbsent($container, 'wrap_notificator.mercure.enabled', (bool)($mercure['enabled'] ?? true));
+        //        $this->setParamIfAbsent($container, 'wrap_notificator.mercure.auto_inject', (bool)($mercure['auto_inject'] ?? false));
+        //        $this->setParamIfAbsent($container, 'wrap_notificator.mercure.turbo_enabled', (bool)($mercure['turbo_enabled'] ?? false));
+        //        $this->setParamIfAbsent($container, 'wrap_notificator.mercure.only_authenticated', (bool)($mercure['only_authenticated'] ?? false));
+        //        $this->setParamIfAbsent($container, 'wrap_notificator.mercure.public_url', (string)($mercure['public_url'] ?? '%env(string:MERCURE_PUBLIC_URL)%'));
+        //        $this->setParamIfAbsent($container, 'wrap_notificator.mercure.default_topics', (array)($mercure['default_topics'] ?? []));
 
         // 3) Load service definitions
         $locator = new FileLocator(__DIR__ . '/../Resources/config');

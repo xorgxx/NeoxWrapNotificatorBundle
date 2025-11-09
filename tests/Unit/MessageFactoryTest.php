@@ -7,7 +7,6 @@ namespace Neox\WrapNotificatorBundle\Tests\Unit;
 use Neox\WrapNotificatorBundle\Notification\MessageFactory;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Notifier\Bridge\Slack\SlackOptions;
 use Symfony\Component\Notifier\Bridge\Telegram\TelegramOptions;
@@ -33,9 +32,9 @@ final class MessageFactoryTest extends TestCase
 
         self::assertInstanceOf(Email::class, $email);
         self::assertSame('Hello', $email->getSubject());
-        $to = array_map(static fn($a) => $a->getAddress(), $email->getTo());
+        $to = array_map(static fn ($a) => $a->getAddress(), $email->getTo());
         self::assertContains('to@example.com', $to);
-        $from = array_map(static fn($a) => [$a->getAddress(), $a->getName()], $email->getFrom());
+        $from = array_map(static fn ($a) => [$a->getAddress(), $a->getName()], $email->getFrom());
         self::assertContains(['from@example.com', 'Sender'], $from);
         self::assertSame('<p>World</p>', $email->getHtmlBody());
     }
