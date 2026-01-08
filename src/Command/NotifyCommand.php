@@ -316,7 +316,8 @@ HELP);
     }
 
     /**
-     * @return array<string,mixed>
+     * @param array<int, string>|null $pairs
+     * @return array<string,string>
      */
     private function parseKeyValueArray(?array $pairs): array
     {

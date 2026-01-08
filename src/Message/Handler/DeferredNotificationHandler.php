@@ -42,6 +42,7 @@ final class DeferredNotificationHandler
                 $this->sender->sendBrowser($payload);
                 break;
             case 'push':
+                /** @var array{endpoint: string, keys: array{p256dh: string, auth: string}} $subscription */
                 $subscription = (array)($p['subscription'] ?? []);
                 $data = (array)($p['data'] ?? []);
                 $ttl = isset($p['ttl']) ? (int)$p['ttl'] : null;
@@ -49,6 +50,7 @@ final class DeferredNotificationHandler
                 $this->sender->sendPush($push);
                 break;
             case 'desktop':
+                /** @var array{endpoint: string, keys: array{p256dh: string, auth: string}} $subscription */
                 $subscription = (array)($p['subscription'] ?? []);
                 $data = (array)($p['data'] ?? []);
                 $ttl = isset($p['ttl']) ? (int)$p['ttl'] : null;

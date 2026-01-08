@@ -9,6 +9,9 @@ use Twig\TwigFunction;
 
 final class WrapNotifyExtension extends AbstractExtension
 {
+    /**
+     * @param array<string,mixed> $wrap_notificator
+     */
     public function __construct(
         private readonly array $wrap_notificator,
     ) {
@@ -26,7 +29,7 @@ final class WrapNotifyExtension extends AbstractExtension
 
     public function renderBootstrap(): string
     {
-        if (!$this->wrap_notificator["enabled"]) {
+        if (!($this->wrap_notificator["enabled"] ?? false)) {
             return '';
         }
         // Expose global helpers and subscribe function; also export from the ES module
@@ -368,21 +371,22 @@ HTML;
     /**
      * Standard front listener (user notifications, toasts, messages)
      * @param array<int,string> $topics
+     * @param array<string,mixed> $options
      * @throws \JsonException
      */
     public function renderBrowser(array $topics = [], array $options = []): string
     {
-        if (!$this->wrap_notificator["enabled"]) {
+        if (!($this->wrap_notificator["enabled"] ?? false)) {
             return '';
         }
 
-        $baseUrlJs = json_encode($this->wrap_notificator["public_url"], JSON_THROW_ON_ERROR);
+        $baseUrlJs = json_encode($this->wrap_notificator["public_url"] ?? '', JSON_THROW_ON_ERROR);
         $topicsJs = json_encode(array_values($topics), JSON_THROW_ON_ERROR);
-        $turboJs = $this->wrap_notificator["turbo_enabled"] ? 'true' : 'false';
+        $turboJs = ($this->wrap_notificator["turbo_enabled"] ?? false) ? 'true' : 'false';
 
         // Merge provided options with defaults from configuration when not set
         if (!array_key_exists('turbo', $options)) {
-            $options['turbo'] = $this->wrap_notificator["turbo_enabled"];
+            $options['turbo'] = $this->wrap_notificator["turbo_enabled"] ?? false;
         }
         if (!array_key_exists('withCredentials', $options)) {
             $options['withCredentials'] = (bool)($this->wrap_notificator['with_credentials_default'] ?? false);
@@ -416,19 +420,21 @@ HTML;
     /**
      * System listener (logs, maintenance, etc.)
      * @param array<int,string> $topics
+     * @param array<string,mixed> $options
+     * @throws \JsonException
      */
     public function renderSystem(array $topics = [], array $options = []): string
     {
-        if (!$this->wrap_notificator["enabled"]) {
+        if (!($this->wrap_notificator["enabled"] ?? false)) {
             return '';
         }
 
-        $baseUrlJs = json_encode($this->wrap_notificator["public_url"], JSON_THROW_ON_ERROR);
+        $baseUrlJs = json_encode($this->wrap_notificator["public_url"] ?? '', JSON_THROW_ON_ERROR);
         $topicsJs = json_encode(array_values($topics), JSON_THROW_ON_ERROR);
-        $turboJs = $this->wrap_notificator["turbo_enabled"] ? 'true' : 'false';
+        $turboJs = ($this->wrap_notificator["turbo_enabled"] ?? false) ? 'true' : 'false';
 
         if (!array_key_exists('turbo', $options)) {
-            $options['turbo'] = $this->wrap_notificator["turbo_enabled"];
+            $options['turbo'] = $this->wrap_notificator["turbo_enabled"] ?? false;
         }
         $optionsJs = json_encode($options, JSON_THROW_ON_ERROR);
 

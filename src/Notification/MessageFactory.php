@@ -48,9 +48,9 @@ final class MessageFactory
                 if ($norm === null) {
                     continue;
                 }
-                if ($norm['mode'] === 'path') {
+                if ($norm['mode'] === 'path' && isset($norm['path'])) {
                     $email->attachFromPath($norm['path'], $norm['name'], $norm['mime']);
-                } else {
+                } elseif ($norm['mode'] === 'bin' && isset($norm['content'])) {
                     $email->attach($norm['content'], $norm['name'], $norm['mime']);
                 }
             }
@@ -66,128 +66,15 @@ final class MessageFactory
                     continue;
                 }
                 $cid = $norm['cid'] ?? null;
-                if ($norm['mode'] === 'path') {
+                if ($norm['mode'] === 'path' && isset($norm['path'])) {
                     $email->embedFromPath($norm['path'], $cid, $norm['mime']);
-                } else {
+                } elseif ($norm['mode'] === 'bin' && isset($norm['content'])) {
                     $email->embed($norm['content'], $cid ?? $norm['name'], $norm['mime']);
                 }
             }
         }
 
         return $email;
-    }
-
-    /**
-     * Normalize an attachment or inline item.
-     * @return array|null {mode: 'path'|'bin', path?:string, content?:string, name:string, mime:string, cid?:string, icon:string}
-     */
-    private function normalizeAttachment(mixed $item, bool $inline): ?array
-    {
-        $name = null;
-        $mime = null;
-        $cid  = null;
-        $icon = 'file';
-        $mode = null;
-        $path = null;
-        $content = null;
-
-        // string path
-        if (is_string($item)) {
-            $path = $item;
-            $mode = 'path';
-            $name = basename($path) ?: 'attachment.bin';
-            $mime = $this->guessMimeFromPathOrName($path, $name);
-            $icon = $this->guessIcon($mime, $name);
-            if ($inline) {
-                $cid = pathinfo($name, PATHINFO_FILENAME) ?: uniqid('cid_', true);
-            }
-            return ['mode' => $mode,'path' => $path,'name' => $name,'mime' => $mime,'cid' => $cid,'icon' => $icon];
-        }
-
-        if (is_array($item)) {
-            if (!empty($item['path']) && is_string($item['path'])) {
-                $path = $item['path'];
-                $mode = 'path';
-                $name = $item['name'] ?? (basename($path) ?: 'attachment.bin');
-                $mime = $item['mime'] ?? $this->guessMimeFromPathOrName($path, $name);
-            } elseif (array_key_exists('bin', $item) || array_key_exists('content_base64', $item)) {
-                $raw = $item['bin'] ?? $item['content_base64'] ?? '';
-                if (is_resource($raw)) {
-                    $content = stream_get_contents($raw) ?: '';
-                } elseif (is_string($raw)) {
-                    $decoded = base64_decode($raw, true);
-                    $content = $decoded !== false ? $decoded : $raw;
-                } else {
-                    return null;
-                }
-                if ($content === '') {
-                    return null;
-                }
-                $mode = 'bin';
-                $name = $item['name'] ?? 'attachment.bin';
-                $mime = $item['mime'] ?? $this->guessMimeFromName($name);
-            } else {
-                return null;
-            }
-
-            $cid = $item['cid'] ?? ($inline ? (pathinfo($name, PATHINFO_FILENAME) ?: uniqid('cid_', true)) : null);
-            $icon = $this->guessIcon($mime, $name);
-
-            if ($mode === 'path') {
-                return ['mode' => 'path','path' => $path,'name' => $name,'mime' => $mime,'cid' => $cid,'icon' => $icon];
-            }
-            return ['mode' => 'bin','content' => $content,'name' => $name,'mime' => $mime,'cid' => $cid,'icon' => $icon];
-        }
-
-        return null;
-    }
-
-    private function guessMimeFromPathOrName(string $path, string $name): string
-    {
-        try {
-            $mimeTypes = \Symfony\Component\Mime\MimeTypes::getDefault();
-            $mime = $mimeTypes->guessMimeType($path);
-            if ($mime) {
-                return $mime;
-            }
-            return $this->guessMimeFromName($name);
-        } catch (\Throwable) {
-            return $this->guessMimeFromName($name);
-        }
-    }
-
-    private function guessMimeFromName(string $name): string
-    {
-        try {
-            $ext = strtolower((string) pathinfo($name, PATHINFO_EXTENSION));
-            if ($ext !== '') {
-                $mimeTypes = \Symfony\Component\Mime\MimeTypes::getDefault();
-                $mimes = $mimeTypes->getMimeTypes($ext);
-                if (!empty($mimes)) {
-                    return $mimes[0];
-                }
-            }
-        } catch (\Throwable) {
-            // ignore
-        }
-        return 'application/octet-stream';
-    }
-
-    private function guessIcon(string $mime, string $name): string
-    {
-        $ext = strtolower((string) pathinfo($name, PATHINFO_EXTENSION));
-        return match (true) {
-            str_starts_with($mime, 'image/') => 'image',
-            str_starts_with($mime, 'video/') => 'video',
-            str_starts_with($mime, 'audio/') => 'audio',
-            $ext === 'pdf' || $mime === 'application/pdf' => 'pdf',
-            in_array($ext, ['doc','docx','odt'], true) => 'doc',
-            in_array($ext, ['xls','xlsx','ods','csv'], true) => 'xls',
-            in_array($ext, ['ppt','pptx','odp'], true) => 'ppt',
-            in_array($ext, ['zip','rar','7z','gz','bz2','tar'], true) => 'archive',
-            in_array($ext, ['txt','md','rtf'], true) => 'text',
-            default => 'file',
-        };
     }
 
     public function sms(string $content, string $to): SmsMessage
@@ -260,5 +147,148 @@ final class MessageFactory
             payloadJson: $payloadJson,
             ttl: $ttl,
         );
+    }
+
+    /**
+     * Normalize an attachment or inline item.
+     * @return array{mode: string, path?: string, content?: string, name: string, mime: string, cid: string|null, icon: string}|null
+     */
+    private function normalizeAttachment(mixed $item, bool $inline): ?array
+    {
+        $name = null;
+        $mime = null;
+        $cid  = null;
+        $icon = 'file';
+        $mode = null;
+        $path = null;
+        $content = null;
+
+        // string path
+        if (is_string($item)) {
+            $path = $item;
+            $mode = 'path';
+            $name = basename($path) ?: 'attachment.bin';
+            $mime = $this->guessMimeFromPathOrName($path, $name);
+            $icon = $this->guessIcon($mime, $name);
+            $cid = null;
+            if ($inline) {
+                $cid = pathinfo($name, PATHINFO_FILENAME) ?: uniqid('cid_', true);
+            }
+            return [
+                'mode' => $mode,
+                'path' => $path,
+                'name' => $name,
+                'mime' => $mime,
+                'cid' => $cid,
+                'icon' => $icon
+            ];
+        }
+
+        if (is_array($item)) {
+            if (!empty($item['path']) && is_string($item['path'])) {
+                $path = $item['path'];
+                $mode = 'path';
+                /** @var string $name */
+                $name = $item['name'] ?? (basename($path) ?: 'attachment.bin');
+                /** @var string $mime */
+                $mime = $item['mime'] ?? $this->guessMimeFromPathOrName($path, $name);
+            } elseif (array_key_exists('bin', $item) || array_key_exists('content_base64', $item)) {
+                $raw = $item['bin'] ?? $item['content_base64'] ?? '';
+                if (is_resource($raw)) {
+                    $content = stream_get_contents($raw) ?: '';
+                } elseif (is_string($raw)) {
+                    $decoded = base64_decode($raw, true);
+                    $content = $decoded !== false ? $decoded : $raw;
+                } else {
+                    return null;
+                }
+                if ($content === '') {
+                    return null;
+                }
+                $mode = 'bin';
+                /** @var string $name */
+                $name = $item['name'] ?? 'attachment.bin';
+                /** @var string $mime */
+                $mime = $item['mime'] ?? $this->guessMimeFromName($name);
+            } else {
+                return null;
+            }
+
+            /** @var string|null $cid */
+            $cid = $item['cid'] ?? ($inline ? (pathinfo($name, PATHINFO_FILENAME) ?: uniqid('cid_', true)) : null);
+            $icon = $this->guessIcon($mime, $name);
+
+            if ($mode === 'path' && $path !== null) {
+                return [
+                    'mode' => 'path',
+                    'path' => $path,
+                    'name' => $name,
+                    'mime' => $mime,
+                    'cid' => $cid,
+                    'icon' => $icon
+                ];
+            }
+            if ($mode === 'bin' && $content !== null) {
+                return [
+                    'mode' => 'bin',
+                    'content' => $content,
+                    'name' => $name,
+                    'mime' => $mime,
+                    'cid' => $cid,
+                    'icon' => $icon
+                ];
+            }
+            return null;
+        }
+
+        return null;
+    }
+
+    private function guessMimeFromPathOrName(string $path, string $name): string
+    {
+        try {
+            $mimeTypes = \Symfony\Component\Mime\MimeTypes::getDefault();
+            $mime = $mimeTypes->guessMimeType($path);
+            if ($mime) {
+                return $mime;
+            }
+            return $this->guessMimeFromName($name);
+        } catch (\Throwable) {
+            return $this->guessMimeFromName($name);
+        }
+    }
+
+    private function guessMimeFromName(string $name): string
+    {
+        try {
+            $ext = strtolower((string) pathinfo($name, PATHINFO_EXTENSION));
+            if ($ext !== '') {
+                $mimeTypes = \Symfony\Component\Mime\MimeTypes::getDefault();
+                $mimes = $mimeTypes->getMimeTypes($ext);
+                if (!empty($mimes)) {
+                    return $mimes[0];
+                }
+            }
+        } catch (\Throwable) {
+            // ignore
+        }
+        return 'application/octet-stream';
+    }
+
+    private function guessIcon(string $mime, string $name): string
+    {
+        $ext = strtolower((string) pathinfo($name, PATHINFO_EXTENSION));
+        return match (true) {
+            str_starts_with($mime, 'image/') => 'image',
+            str_starts_with($mime, 'video/') => 'video',
+            str_starts_with($mime, 'audio/') => 'audio',
+            $ext === 'pdf' || $mime === 'application/pdf' => 'pdf',
+            in_array($ext, ['doc','docx','odt'], true) => 'doc',
+            in_array($ext, ['xls','xlsx','ods','csv'], true) => 'xls',
+            in_array($ext, ['ppt','pptx','odp'], true) => 'ppt',
+            in_array($ext, ['zip','rar','7z','gz','bz2','tar'], true) => 'archive',
+            in_array($ext, ['txt','md','rtf'], true) => 'text',
+            default => 'file',
+        };
     }
 }

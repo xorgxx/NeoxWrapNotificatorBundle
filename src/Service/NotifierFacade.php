@@ -13,10 +13,12 @@ use Symfony\Component\Mailer\Messenger\SendEmailMessage;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
 use Symfony\Component\Notifier\Message\ChatMessage;
 use Symfony\Component\Notifier\Message\SmsMessage;
+use Twig\Environment;
 
 class NotifierFacade
 {
@@ -24,8 +26,8 @@ class NotifierFacade
         private readonly MessageFactory $factory,
         private readonly SenderInterface $sender,
         private readonly ?DedupeRepositoryInterface $dedupe = null,
-        private readonly ?\Symfony\Component\Messenger\MessageBusInterface $bus = null,
-        private readonly ?\Twig\Environment $twig = null,
+        private readonly ?MessageBusInterface $bus = null,
+        private readonly ?Environment $twig = null,
     ) {
     }
 
@@ -256,6 +258,9 @@ class NotifierFacade
         return $this->notifyPush($subscription, $data, $ttl, $metadata, $ctx);
     }
 
+    /**
+     * @param array<string,mixed> $metadata
+     */
     private function withMetadata(DeliveryStatus $status, array $metadata): DeliveryStatus
     {
         if ($metadata === []) {
@@ -264,6 +269,9 @@ class NotifierFacade
         return $status->withMetadata($metadata);
     }
 
+    /**
+     * @param array<string,mixed> $metadata
+     */
     private function finalize(DeliveryStatus $status, array $metadata, ?DeliveryContext $ctx): DeliveryStatus
     {
         $status = $this->withMetadata($status, $metadata);
@@ -275,6 +283,7 @@ class NotifierFacade
 
     /**
      * Ensure Messenger bus is available; otherwise return a finalized failed status with the provided message.
+     * @param array<string,mixed> $metadata
      */
     private function requireBusOrFail(string $channel, array $metadata, ?DeliveryContext $ctx, string $failureMessage): ?DeliveryStatus
     {
@@ -315,7 +324,7 @@ class NotifierFacade
     /**
      * Dispatch a message on a specific transport (async or sync) and return a normalized status.
      * @param array<string,mixed> $metadata
-     * @param callable $buildMessage function(): mixed — returns the message to dispatch (Email|SmsMessage|ChatMessage|Update|...)
+     * @param (callable(): mixed) $buildMessage function(): mixed — returns the message to dispatch (Email|SmsMessage|ChatMessage|Update|...)
      * @throws ExceptionInterface
      */
     private function forcedTransportCommon(string $channel, array $metadata, DeliveryContext $ctx, callable $buildMessage, bool $wrapEmail = false): DeliveryStatus

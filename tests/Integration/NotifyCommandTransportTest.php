@@ -14,6 +14,9 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 final class NotifyCommandTransportTest extends TestCase
 {
+    /**
+     * @param (callable(DeliveryContext): void) $assertCtx
+     */
     private function getCommandTesterWithAssertion(callable $assertCtx, string $expectedChannel): CommandTester
     {
         $facade = $this->createMock(NotifierFacade::class);
