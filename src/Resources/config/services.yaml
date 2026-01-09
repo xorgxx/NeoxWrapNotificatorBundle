@@ -24,11 +24,28 @@ services:
     # Prefer Cache repository when available
     Neox\WrapNotificatorBundle\Contract\DedupeRepositoryInterface: '@Neox\WrapNotificatorBundle\Infrastructure\Dedupe\CacheDedupeRepository'
 
+    # Logging
+    Neox\WrapNotificatorBundle\Infrastructure\Logging\PsrNotificationLogger: ~
+
+    # Default implementation for logging (can be overridden by the user)
+    Neox\WrapNotificatorBundle\Contract\NotificationLoggerInterface: '@Neox\WrapNotificatorBundle\Infrastructure\Logging\PsrNotificationLogger'
+
     # Facade
     Neox\WrapNotificatorBundle\Service\NotifierFacade:
         arguments:
             $dedupe: '@?Neox\WrapNotificatorBundle\Contract\DedupeRepositoryInterface'
             $bus: '@?messenger.bus.default'
+            $validator: '@?validator'
+            $formFactory: '@?form.factory'
+            $logger: '@Neox\WrapNotificatorBundle\Contract\NotificationLoggerInterface'
+            $hub: '@?mercure.hub.default'
+            $mercureConfig: '%wrap_notificator.mercure%'
+            $loggingConfig: '%wrap_notificator.logging%'
+
+    # Controllers
+    Neox\WrapNotificatorBundle\Controller\NotificationWidgetController:
+        public: true
+        tags: ['controller.service_arguments']
 
     # Alias interface to implementation for sending
     Neox\WrapNotificatorBundle\Contract\SenderInterface: '@Neox\WrapNotificatorBundle\Notification\TypedSender'

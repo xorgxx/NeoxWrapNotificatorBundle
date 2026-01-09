@@ -4,15 +4,53 @@ declare(strict_types=1);
 
 namespace WrapNotificatorBundle\Examples\Controller;
 
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use WrapNotificatorBundle\Service\NotifierFacade;
+use Neox\WrapNotificatorBundle\Form\GenericNotificationType;
+use Neox\WrapNotificatorBundle\Notification\Dto\SmsNotificationDto;
+use Neox\WrapNotificatorBundle\Service\NotifierFacade;
 
-final class NotificationsController
+final class NotificationsController extends AbstractController
 {
     public function __construct(private readonly NotifierFacade $facade)
     {
+    }
+
+    /**
+     * Exemple d'utilisation du formulaire dynamique (CRUD-like) pour envoyer un SMS
+     */
+    #[Route(path: '/notify/sms-form', name: 'notify_sms_form', methods: ['GET', 'POST'])]
+    public function smsForm(Request $request): Response
+    {
+        $dto = new SmsNotificationDto();
+        $form = $this->createForm(GenericNotificationType::class, $dto);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $status = $this->facade->send($dto);
+
+            if ($status->status === 'sent' || $status->status === 'queued') {
+                $this->addFlash('success', 'Notification envoyée avec succès !');
+            } else {
+                $this->addFlash('error', 'Échec de l\'envoi : ' . $status->message);
+            }
+        }
+
+        return $this->render('examples/sms_form.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+
+    /**
+     * Exemple d'utilisation du widget Twig pour afficher plusieurs formulaires
+     */
+    #[Route(path: '/notify/widgets', name: 'notify_widgets', methods: ['GET'])]
+    public function widgetDashboard(): Response
+    {
+        return $this->render('examples/widget_example.html.twig');
     }
 
     #[Route(path: '/notify/ag', name: 'notify_ag', methods: ['POST'])]

@@ -51,3 +51,15 @@ final class SimpleExampleTest extends TestCase {
 #### Architecture Notes
 - The bundle provides an ergonomic facade (`NotifierFacade`) over Symfony's Notifier, Mailer, Mercure, and Web Push.
 - Use `DeliveryContext` to control delivery options like deferring (via Symfony Messenger), deduplication, or forcing specific transports.
+
+#### Plug & Play System
+- **DTOs**: All new notification types must implement `NotificationDtoInterface` and be placed in `src/Notification/Dto/`.
+    - Use public properties for data.
+    - Use Symfony Validator attributes (`#[Assert\...]`) for validation.
+- **Forms**: Use `GenericNotificationType` to automatically generate forms based on DTO properties.
+- **Widgets**: Use the Twig function `{{ wrap_notify_form('channel') }}` for standalone integration of notification forms.
+- **Validation**: Always use the `NotifierFacade::send()` method which handles automatic DTO validation.
+
+#### Documentation & Changelog
+- **Multi-language**: Documentation must be maintained in both English (`Docs/en/`) and French (`Docs/fr/`).
+- **Changelog**: Every significant change or new feature must be recorded in `CHANGELOG.md` in both languages.

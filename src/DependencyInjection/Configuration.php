@@ -31,6 +31,7 @@ final class Configuration implements ConfigurationInterface
         // @phpstan-ignore-next-line
         $mercureChildren
             ->booleanNode('enabled')->defaultTrue()->end()
+            ->booleanNode('notify_status')->defaultFalse()->end()
             ->booleanNode('auto_inject')->defaultFalse()->end()
             ->booleanNode('turbo_enabled')->defaultFalse()->end()
             ->booleanNode('only_authenticated')->defaultFalse()->end()
@@ -49,6 +50,13 @@ final class Configuration implements ConfigurationInterface
                     ->scalarNode('asset_path')->defaultValue('@WrapNotificator/css/wrap_notificator.css')->end()
                     ->scalarNode('asset_fallback_prefix')->defaultValue('/bundles/wrapnotificator')->end()
                 ->end()
+            ->end()
+        ->end();
+
+        $children->arrayNode('logging')
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->booleanNode('enabled')->defaultFalse()->end()
             ->end()
         ->end();
 

@@ -1,0 +1,31 @@
+{# examples/twig/sms_form.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Envoyer un SMS (Exemple){% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h1>Envoyer un SMS</h1>
+        <p class="text-muted">Cet exemple utilise <code>GenericNotificationType</code> pour générer automatiquement le formulaire.</p>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                {{ form_start(form) }}
+                    {{ form_widget(form) }}
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <a href="{{ path('notify_ag') }}" class="btn btn-link">Retour aux exemples</a>
+        </div>
+    </div>
+{% endblock %}

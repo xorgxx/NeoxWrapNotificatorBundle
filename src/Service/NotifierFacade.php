@@ -5,11 +5,20 @@ declare(strict_types=1);
 namespace Neox\WrapNotificatorBundle\Service;
 
 use Neox\WrapNotificatorBundle\Contract\DedupeRepositoryInterface;
+use Neox\WrapNotificatorBundle\Contract\NotificationLoggerInterface;
 use Neox\WrapNotificatorBundle\Contract\SenderInterface;
 use Neox\WrapNotificatorBundle\Notification\DeliveryContext;
 use Neox\WrapNotificatorBundle\Notification\DeliveryStatus;
+use Neox\WrapNotificatorBundle\Notification\Dto\BrowserNotificationDto;
+use Neox\WrapNotificatorBundle\Notification\Dto\ChatNotificationDto;
+use Neox\WrapNotificatorBundle\Notification\Dto\EmailNotificationDto;
+use Neox\WrapNotificatorBundle\Notification\Dto\NotificationDtoInterface;
+use Neox\WrapNotificatorBundle\Notification\Dto\PushNotificationDto;
+use Neox\WrapNotificatorBundle\Notification\Dto\SmsNotificationDto;
 use Neox\WrapNotificatorBundle\Notification\MessageFactory;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Mailer\Messenger\SendEmailMessage;
+use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
@@ -18,17 +27,82 @@ use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
 use Symfony\Component\Notifier\Message\ChatMessage;
 use Symfony\Component\Notifier\Message\SmsMessage;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Twig\Environment;
 
 class NotifierFacade
 {
+    /**
+     * @param array<string, mixed> $mercureConfig
+     * @param array<string, mixed> $loggingConfig
+     */
     public function __construct(
         private readonly MessageFactory $factory,
         private readonly SenderInterface $sender,
         private readonly ?DedupeRepositoryInterface $dedupe = null,
         private readonly ?MessageBusInterface $bus = null,
         private readonly ?Environment $twig = null,
+        private readonly ?ValidatorInterface $validator = null,
+        public readonly ?FormFactoryInterface $formFactory = null,
+        private readonly ?NotificationLoggerInterface $logger = null,
+        private readonly ?HubInterface $hub = null,
+        private readonly array $mercureConfig = [],
+        private readonly array $loggingConfig = [],
     ) {
+    }
+
+    /**
+     * @param array<string,mixed> $metadata
+     */
+    public function send(NotificationDtoInterface $dto, array $metadata = [], ?DeliveryContext $ctx = null): DeliveryStatus
+    {
+        if ($this->validator !== null) {
+            $errors = $this->validator->validate($dto);
+            if (count($errors) > 0) {
+                return DeliveryStatus::failed($dto->getChannel(), (string) $errors, null, $metadata);
+            }
+        }
+
+        return match (true) {
+            $dto instanceof EmailNotificationDto => $this->notifyEmail(
+                $dto->subject,
+                $dto->content ?? '',
+                $dto->to,
+                $dto->isHtml,
+                ['template' => $dto->template, 'vars' => $dto->templateVars],
+                $metadata,
+                $ctx
+            ),
+            $dto instanceof SmsNotificationDto => $this->notifySms(
+                $dto->content,
+                $dto->to,
+                $metadata,
+                $ctx
+            ),
+            $dto instanceof ChatNotificationDto => $this->notifyChat(
+                $dto->transport,
+                $dto->content,
+                $dto->subject,
+                $dto->options,
+                $metadata,
+                $ctx
+            ),
+            $dto instanceof BrowserNotificationDto => $this->notifyBrowser(
+                $dto->topic,
+                $dto->data,
+                $metadata,
+                $ctx
+            ),
+            $dto instanceof PushNotificationDto => $this->notifyPush(
+                /** @phpstan-ignore-next-line */
+                $dto->subscription,
+                $dto->data,
+                $dto->ttl,
+                $metadata,
+                $ctx
+            ),
+            default => DeliveryStatus::failed($dto->getChannel(), 'Unsupported DTO type', null, $metadata),
+        };
     }
 
     /**
@@ -278,6 +352,25 @@ class NotifierFacade
         if ($ctx !== null) {
             $status = $status->withContext($ctx);
         }
+
+        if (($this->loggingConfig['enabled'] ?? false) && $this->logger !== null) {
+            try {
+                $this->logger->log($status);
+            } catch (\Throwable) {
+                // Silently fail logging to avoid breaking the main flow
+            }
+        }
+
+        if (($this->mercureConfig['notify_status'] ?? false) && $this->hub !== null) {
+            try {
+                $topic = $status->metadata['correlationId'] ?? 'wrap_notificator/status';
+                $update = new Update((string) $topic, (string) json_encode($status->toArray()));
+                $this->hub->publish($update);
+            } catch (\Throwable) {
+                // Silently fail status notification
+            }
+        }
+
         return $status;
     }
 

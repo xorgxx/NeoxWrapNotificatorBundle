@@ -23,7 +23,13 @@ final class WrapNotifyExtension extends AbstractExtension
             new TwigFunction('wrap_notify_bootstrap', $this->renderBootstrap(...), [ 'is_safe' => [ 'html']]),
             new TwigFunction('wrap_notify_browser', $this->renderBrowser(...), [ 'is_safe' => [ 'html']]),
             new TwigFunction('wrap_notify_system', $this->renderSystem(...), [ 'is_safe' => [ 'html']]),
+            new TwigFunction('wrap_notify_form', $this->renderNotifyForm(...), [ 'is_safe' => [ 'html']]),
         ];
+    }
+
+    public function renderNotifyForm(string $type): string
+    {
+        return sprintf('{{ render(controller("Neox\\\\WrapNotificatorBundle\\\\Controller\\\\NotificationWidgetController::renderForm", {type: "%s"})) }}', $type);
     }
 
 

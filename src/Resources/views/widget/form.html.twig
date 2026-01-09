@@ -1,0 +1,25 @@
+<div class="wrap-notify-widget">
+    <h3>Envoyer une notification {{ type|upper }}</h3>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {{ form_start(form) }}
+        {{ form_widget(form) }}
+    {{ form_end(form) }}
+
+    {% if status %}
+        <div class="mt-3">
+            <strong>Dernier statut :</strong> {{ status.status }}
+            {% if status.message %}
+                <p class="text-muted">{{ status.message }}</p>
+            {% endif %}
+            <small class="text-secondary">UUID: {{ status.uuid }}</small>
+        </div>
+    {% endif %}
+</div>
