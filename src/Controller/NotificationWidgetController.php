@@ -22,7 +22,7 @@ final class NotificationWidgetController extends AbstractController
     {
     }
 
-    public function renderForm(Request $request, string $type): Response
+    public function renderForm(Request $request, string $type, ?string $action = null, array|string $exclude = [], array $data = []): Response
     {
         $dto = match ($type) {
             'email'     => new EmailNotificationDto(),
@@ -33,7 +33,23 @@ final class NotificationWidgetController extends AbstractController
             default     => throw new \InvalidArgumentException("Unknown notification type: $type"),
         };
 
-        $form = $this->createForm(GenericNotificationType::class, $dto);
+        foreach ($data as $key => $value) {
+            if (property_exists($dto, $key)) {
+                $dto->$key = $value;
+            }
+        }
+
+        $formOptions = [];
+        if ($action) {
+            $formOptions['action'] = $action;
+        }
+
+        if (is_string($exclude)) {
+            $exclude = array_map('trim', explode(',', $exclude));
+        }
+        $formOptions['exclude_fields'] = $exclude;
+
+        $form = $this->createForm(GenericNotificationType::class, $dto, $formOptions);
         $form->handleRequest($request);
 
         $status = null;
@@ -47,7 +63,7 @@ final class NotificationWidgetController extends AbstractController
             }
         }
 
-        return $this->render('@NeoxWrapNotificator/widget/form.html.twig', [
+        return $this->render('@WrapNotificator/widget/form.html.twig', [
             'form'   => $form->createView(),
             'type'   => $type,
             'status' => $status,

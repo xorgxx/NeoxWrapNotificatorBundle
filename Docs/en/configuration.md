@@ -25,6 +25,10 @@ Create `config/packages/wrap_notificator.yaml`:
 wrap_notificator:
   logging:
     enabled: false                    # Enable logging (defaults to Symfony / Monolog logs)
+  live_flash:
+    enabled: false
+    consume: true
+    default_topic_prefix: 'wrap_notificator/flash'
   mercure:
     enabled: true
     notify_status: false              # Automatically notify delivery status via Mercure

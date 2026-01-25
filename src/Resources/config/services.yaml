@@ -58,6 +58,17 @@ services:
 #            $turboEnabled: '%wrap_notificator.mercure.turbo_enabled%'
         tags: ['twig.extension']
 
+    Neox\WrapNotificatorBundle\EventSubscriber\LiveFlashControllerSubscriber:
+        arguments:
+            $liveFlashConfig: '%wrap_notificator.live_flash%'
+        tags: ['kernel.event_subscriber']
+
+    Neox\WrapNotificatorBundle\EventSubscriber\LiveFlashResponseSubscriber:
+        arguments:
+            $mercureConfig: '%wrap_notificator.mercure%'
+            $liveFlashConfig: '%wrap_notificator.live_flash%'
+        tags: ['kernel.event_subscriber']
+
     # CLI commands
     Neox\WrapNotificatorBundle\Command\NotifyCommand:
         tags: ['console.command']

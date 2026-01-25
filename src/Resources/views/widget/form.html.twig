@@ -1,16 +1,34 @@
 <div class="wrap-notify-widget">
-    <h3>Envoyer une notification {{ type|upper }}</h3>
+    {% if type != 'email' %}
+        <h3>Envoyer une notification {{ type|upper }}</h3>
+    {% endif %}
 
     {% for label, messages in app.flashes %}
         {% for message in messages %}
-            <div class="alert alert-{{ label }}">
+            <div class="alert alert-{{ label == 'error' ? 'danger' : (label == 'success' ? 'success' : label) }} alert-dismissible fade show" role="alert">
                 {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         {% endfor %}
     {% endfor %}
 
-    {{ form_start(form) }}
-        {{ form_widget(form) }}
+    {{ form_start(form, {'attr': {'class': 'row g-3'}}) }}
+        {% for child in form.children %}
+            {% if child.vars.name != 'send' %}
+                <div class="col-12">
+                    {{ form_label(child, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                    {{ form_widget(child) }}
+                    {{ form_errors(child, {'attr': {'class': 'text-danger small'}}) }}
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        {# Le bouton 'send' est géré à l'extérieur pour la modale, mais on le rend si présent et non exclu #}
+        {% if form.send is defined %}
+            <div class="col-12 mt-4">
+                {{ form_widget(form.send, {'attr': {'class': 'btn btn-success w-100 fw-bold'}}) }}
+            </div>
+        {% endif %}
     {{ form_end(form) }}
 
     {% if status %}

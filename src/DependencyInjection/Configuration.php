@@ -60,6 +60,15 @@ final class Configuration implements ConfigurationInterface
             ->end()
         ->end();
 
+        $children->arrayNode('live_flash')
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->booleanNode('enabled')->defaultFalse()->end()
+                ->booleanNode('consume')->defaultTrue()->end()
+                ->scalarNode('default_topic_prefix')->defaultValue('wrap_notificator/flash')->end()
+            ->end()
+        ->end();
+
         return $treeBuilder;
     }
 }

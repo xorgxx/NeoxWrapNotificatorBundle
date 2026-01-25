@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+- EN — Added Live Flash feature:
+    - New attribute `#[LiveFlash]` to enable/disable live flash publishing per controller/method.
+    - New `wrap_notificator.live_flash` configuration (global enable + topic prefix + consume).
+    - Flash messages can be published via Mercure on `kernel.response` and displayed instantly as toasts.
+- FR — Ajout de la fonctionnalité Live Flash :
+    - Nouvel attribut `#[LiveFlash]` pour activer/désactiver le live flash par contrôleur/méthode.
+    - Nouvelle configuration `wrap_notificator.live_flash` (activation globale + préfixe de topic + consommation).
+    - Publication des flashes via Mercure sur `kernel.response` pour affichage instantané en toasts.
+
 ## [1.3.1] - 2026-01-09
 - EN — Documentation and examples update:
     - Added examples for Plug & Play forms and Twig widgets in `examples/`.

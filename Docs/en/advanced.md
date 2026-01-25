@@ -104,6 +104,45 @@ $facade->send($dto, [], $ctx);
 // An update will be published to the "user-unique-id" topic
 ```
 
+## Live Flash (no refresh)
+
+The bundle can publish Symfony flash messages through Mercure on `kernel.response`, so they can be displayed instantly in the browser (toasts) without reloading the page.
+
+### Global enable
+
+```yaml
+wrap_notificator:
+  live_flash:
+    enabled: true
+```
+
+### Selective enable/disable with attribute
+
+You can enable/disable locally with the `#[LiveFlash]` attribute (class or method):
+
+```php
+use Neox\WrapNotificatorBundle\Attribute\LiveFlash;
+
+#[LiveFlash]
+final class AdminController
+{
+    #[LiveFlash(enabled: false)]
+    public function export(): Response
+    {
+        // ...
+    }
+}
+```
+
+### Mercure topic and Twig listener
+
+By default, the topic is `wrap_notificator/flash/{sessionId}`. In your layout:
+
+```twig
+{{ wrap_notify_bootstrap() }}
+{{ wrap_notify_browser(['wrap_notificator/flash/' ~ app.session.id]) }}
+```
+
 ## Quick Troubleshooting
 
 - **No toast showing?** Ensure `wrap_notify_bootstrap()` is included, `wrap_notificator.mercure.enabled=true`, and the Mercure public URL is correct.
