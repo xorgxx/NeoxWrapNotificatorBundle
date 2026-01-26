@@ -5,12 +5,20 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - EN — Added Live Flash feature:
     - New attribute `#[LiveFlash]` to enable/disable live flash publishing per controller/method.
-    - New `wrap_notificator.live_flash` configuration (global enable + topic prefix + consume).
+    - New `wrap_notificator.live_flash` configuration (global enable + topic prefix + consume + optional grouping).
     - Flash messages can be published via Mercure on `kernel.response` and displayed instantly as toasts.
+- EN — Docs: added examples to trigger browser toasts from a link/button via `window.wrapNotify.notifyBrowser(...)`.
+- EN — Added SweetAlert2 toast auto-detection:
+    - When `window.Swal.fire` is available, browser notifications (including Live Flash) are rendered via SweetAlert2 toast.
+    - Otherwise, it falls back to Bootstrap toasts.
 - FR — Ajout de la fonctionnalité Live Flash :
     - Nouvel attribut `#[LiveFlash]` pour activer/désactiver le live flash par contrôleur/méthode.
-    - Nouvelle configuration `wrap_notificator.live_flash` (activation globale + préfixe de topic + consommation).
+    - Nouvelle configuration `wrap_notificator.live_flash` (activation globale + préfixe de topic + consommation + regroupement optionnel).
     - Publication des flashes via Mercure sur `kernel.response` pour affichage instantané en toasts.
+- FR — Docs : ajout d'exemples pour déclencher un toast navigateur depuis un lien/bouton via `window.wrapNotify.notifyBrowser(...)`.
+- FR — Ajout de l'auto-détection SweetAlert2 (toast) :
+    - Si `window.Swal.fire` est disponible, les notifications navigateur (y compris Live Flash) utilisent SweetAlert2 en toast.
+    - Sinon, fallback sur les toasts Bootstrap.
 
 ## [1.3.1] - 2026-01-09
 - EN — Documentation and examples update:

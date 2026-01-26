@@ -74,6 +74,38 @@ final class LiveFlashResponseSubscriber implements EventSubscriberInterface
             $topic = rtrim($prefix, '/').'/'.$session->getId();
         }
 
+        $groupMessages = (bool) ($this->liveFlashConfig['group_messages'] ?? false);
+        if ($groupMessages) {
+            $items = [];
+            foreach ($flashes as $type => $messages) {
+                if (!is_iterable($messages)) {
+                    continue;
+                }
+                foreach ($messages as $message) {
+                    $items[] = [
+                        'level' => (string) $type,
+                        'message' => (string) $message,
+                    ];
+                }
+            }
+
+            if ($items === []) {
+                return;
+            }
+
+            $this->facade->notifyBrowser(
+                topic: $topic,
+                data: [
+                    'type' => 'flash_group',
+                    'title' => 'Notifications',
+                    'messages' => $items,
+                ],
+                metadata: ['source' => 'live_flash'],
+            );
+
+            return;
+        }
+
         foreach ($flashes as $type => $messages) {
             if (!is_iterable($messages)) {
                 continue;

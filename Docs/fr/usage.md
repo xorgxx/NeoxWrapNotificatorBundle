@@ -138,6 +138,37 @@ Exemple dans un layout :
 {{ wrap_notify_browser(['users:42']) }}
 ```
 
+### Déclencher un toast depuis un lien ou un bouton
+
+Le bundle expose `window.wrapNotify.notifyBrowser(...)` (installé par `wrap_notify_bootstrap()`), qui permet de déclencher une notification côté navigateur (SweetAlert2 en toast si disponible, sinon toast Bootstrap).
+
+Exemple avec un lien `<a>` :
+
+```twig
+<a href="#" onclick="event.preventDefault(); window.wrapNotify?.notifyBrowser?.({ payload: { title: 'Contact', message: 'Clique sur Contact', level: 'info', delay: 5000 } })">
+  Contact
+</a>
+```
+
+Exemple avec Stimulus :
+
+```twig
+<a href="#" data-action="click->alert#fireToast">Contact</a>
+```
+
+```js
+import { Controller } from '@hotwired/stimulus';
+
+export default class extends Controller {
+  fireToast(event) {
+    event.preventDefault();
+    window.wrapNotify?.notifyBrowser?.({
+      payload: { title: 'Contact', message: 'Clique sur Contact', level: 'info', delay: 5000 }
+    });
+  }
+}
+```
+
 ## Commande CLI
 
 Vous pouvez envoyer des notifications via la console. Cette commande est utile pour les scripts ou les tâches planifiées.

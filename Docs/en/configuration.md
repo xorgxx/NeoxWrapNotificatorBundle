@@ -28,6 +28,7 @@ wrap_notificator:
   live_flash:
     enabled: false
     consume: true
+    group_messages: false
     default_topic_prefix: 'wrap_notificator/flash'
   mercure:
     enabled: true

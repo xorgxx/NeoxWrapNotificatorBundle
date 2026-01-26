@@ -286,15 +286,96 @@ final class WrapNotifyExtension extends AbstractExtension
         try { return JSON.stringify(value); } catch { return String(value); }
     }
 
+    function escapeHtml(value) {
+        const s = coerceText(value);
+        return s
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    function hasSweetAlert() {
+        return !!(window.Swal && typeof window.Swal.fire === 'function');
+    }
+
+    function showSweetAlertToast({ title = 'Notification', body = '', html = undefined, delay = 5000, variant = 'info' } = {}) {
+        const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+        delay = clamp(Number(delay) || 5000, 1500, 15000);
+        const v = String(variant || 'info').toLowerCase();
+        let icon = 'info';
+        if (v === 'success' || v === 'ok' || v === 'done' || v === 'valid') icon = 'success';
+        else if (v === 'warning' || v === 'warn' || v === 'avertissement') icon = 'warning';
+        else if (v === 'danger' || v === 'error' || v === 'fail' || v === 'failed') icon = 'error';
+
+        const base = (window.toastQueue && typeof window.toastQueue.fire === 'function')
+            ? window.toastQueue
+            : ((window.toast && typeof window.toast.fire === 'function')
+                ? window.toast
+                : window.Swal);
+
+        try {
+            base.fire({
+                icon,
+                title: coerceText(title),
+                text: (html !== undefined && html !== null && String(html) !== '') ? undefined : coerceText(body),
+                html: (html !== undefined && html !== null && String(html) !== '') ? String(html) : undefined,
+                timer: delay,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    try {
+                        if (window.Swal && typeof window.Swal.stopTimer === 'function') {
+                            toast.addEventListener('mouseenter', window.Swal.stopTimer);
+                        }
+                        if (window.Swal && typeof window.Swal.resumeTimer === 'function') {
+                            toast.addEventListener('mouseleave', window.Swal.resumeTimer);
+                        }
+                    } catch (_) {}
+                },
+            });
+        } catch (e) {
+            showBootstrapToast({ title: coerceText(title), body: coerceText(body), variant: v, delay });
+        }
+    }
+
     function notifyBrowser(detail) {
         const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
         const payload = detail && detail.payload !== undefined ? detail.payload : null;
         let title = 'Notification';
         let body = '';
+        let html = undefined;
         let variant = 'info'; // default to info if no level provided
         let delay = 5000;
 
+        const levelWeight = (lvl) => {
+            const v = String(lvl || 'info').toLowerCase();
+            if (v === 'danger' || v === 'error' || v === 'fail' || v === 'failed') return 4;
+            if (v === 'warning' || v === 'warn' || v === 'avertissement') return 3;
+            if (v === 'success' || v === 'ok' || v === 'done' || v === 'valid') return 2;
+            return 1;
+        };
+
         if (payload && typeof payload === 'object') {
+            // Grouped flashes: one popup with list
+            if ((payload.type === 'flash_group' || payload.grouped === true) && Array.isArray(payload.messages)) {
+                title = payload.title || 'Notifications';
+                const msgs = payload.messages;
+                let maxW = 1;
+                for (const it of msgs) {
+                    const w = levelWeight(it && (it.level ?? it.type ?? it.variant));
+                    if (w > maxW) maxW = w;
+                }
+                variant = (maxW >= 4) ? 'danger' : ((maxW === 3) ? 'warning' : ((maxW === 2) ? 'success' : 'info'));
+                const items = msgs.map((it) => {
+                    const msg = it && (it.message ?? it.text ?? it.body) !== undefined ? (it.message ?? it.text ?? it.body) : it;
+                    return coerceText(msg);
+                });
+                const itemsHtml = items.map((m) => `<li>${escapeHtml(m)}</li>`).join('');
+                html = `<ul style="margin:0; padding-left: 1.25rem;">${itemsHtml}</ul>`;
+                // Bootstrap fallback uses innerHTML for body, so provide a safe <br>-separated HTML string.
+                body = items.map((m) => escapeHtml(m)).join('<br>');
+            } else {
             title = payload.title || payload.subject || title;
             body = payload.body || payload.message || payload.text || coerceText(payload.data || payload);
             // Prefer the semantic "level" then fall back to other common keys
@@ -311,6 +392,7 @@ final class WrapNotifyExtension extends AbstractExtension
             if (rawDelay != null && !Number.isNaN(Number(rawDelay))) {
                 delay = clamp(Number(rawDelay), 1500, 15000);
             }
+            }
         } else {
             body = coerceText(payload);
         }
@@ -326,7 +408,12 @@ final class WrapNotifyExtension extends AbstractExtension
         const shadow = payload && (payload.shadow || (payload.ui && payload.ui.shadow)) ? (payload.shadow || payload.ui.shadow) : 'md';
         const glass = payload && (payload.glass ?? (payload.ui && payload.ui.glass)) !== undefined ? (payload.glass ?? payload.ui.glass) : false;
         const opacity = payload && (payload.opacity ?? (payload.ui && payload.ui.opacity)) !== undefined ? Number(payload.opacity ?? payload.ui.opacity) : 1;
-        showBootstrapToast({ title: coerceText(title), body: coerceText(body), variant, delay, icon: iconUrl, iconUrl, iconHtml, iconClass, iconAlt, density, position, rounded, shadow, glass, opacity });
+
+        if (hasSweetAlert()) {
+            showSweetAlertToast({ title: coerceText(title), body: coerceText(body), html, variant, delay });
+        } else {
+            showBootstrapToast({ title: coerceText(title), body: coerceText(body), variant, delay, icon: iconUrl, iconUrl, iconHtml, iconClass, iconAlt, density, position, rounded, shadow, glass, opacity });
+        }
     }
 
     async function requestNotificationPermission() {

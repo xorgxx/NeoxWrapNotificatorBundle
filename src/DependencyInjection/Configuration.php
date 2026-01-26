@@ -65,6 +65,7 @@ final class Configuration implements ConfigurationInterface
             ->children()
                 ->booleanNode('enabled')->defaultFalse()->end()
                 ->booleanNode('consume')->defaultTrue()->end()
+                ->booleanNode('group_messages')->defaultFalse()->end()
                 ->scalarNode('default_topic_prefix')->defaultValue('wrap_notificator/flash')->end()
             ->end()
         ->end();

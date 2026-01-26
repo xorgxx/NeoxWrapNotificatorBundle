@@ -116,6 +116,18 @@ wrap_notificator:
     enabled: true
 ```
 
+### Group multiple flash messages into a single popup
+
+By default, each flash message is published and displayed as a distinct notification.
+
+If you want to group all `FlashBag` messages into a single popup (as a list), enable:
+
+```yaml
+wrap_notificator:
+  live_flash:
+    group_messages: true
+```
+
 ### Selective enable/disable with attribute
 
 You can enable/disable locally with the `#[LiveFlash]` attribute (class or method):
@@ -142,6 +154,12 @@ By default, the topic is `wrap_notificator/flash/{sessionId}`. In your layout:
 {{ wrap_notify_bootstrap() }}
 {{ wrap_notify_browser(['wrap_notificator/flash/' ~ app.session.id]) }}
 ```
+
+### SweetAlert2 rendering (toast) when available
+
+If SweetAlert2 is loaded on the page (presence of `window.Swal.fire`), the bundle will automatically render notifications (Mercure and Live Flash) using **SweetAlert2 in toast mode**.
+
+Otherwise, it falls back to **Bootstrap toasts**.
 
 ## Quick Troubleshooting
 
