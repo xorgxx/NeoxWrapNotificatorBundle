@@ -155,9 +155,9 @@ Par défaut, le topic est `wrap_notificator/flash/{sessionId}`. Dans votre layou
 {{ wrap_notify_browser(['wrap_notificator/flash/' ~ app.session.id]) }}
 ```
 
-### Rendu SweetAlert2 (toast) si disponible
+### Rendu iziToast (toast) si disponible
 
-Si SweetAlert2 est chargé dans la page (présence de `window.Swal.fire`), le bundle affichera automatiquement les notifications (Mercure et Live Flash) via **SweetAlert2 en mode toast**.
+Si iziToast est chargé dans la page (présence de `window.iziToast`), le bundle affichera automatiquement les notifications (Mercure et Live Flash) via **iziToast**.
 
 Sinon, le rendu retombe sur les **toasts Bootstrap**.
 

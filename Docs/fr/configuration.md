@@ -41,9 +41,29 @@ wrap_notificator:
     ui:
       external_css: true
       auto_link_css: true
+      renderer: 'auto'                # 'auto' (défaut), 'izitoast' ou 'bootstrap'
+      force_theme: 'auto'             # 'auto' (défaut), 'dark' ou 'light' (forçage du thème UI)
+      toast_theme: 'default'          # 'default' (défaut), 'amazon' (ou 'amazone'), 'google', 'dark'
       asset_path: '@WrapNotificator/css/wrap_notificator.css'
       asset_fallback_prefix: '/bundles/wrapnotificator'
 ```
+
+## Thèmes UI (force_theme vs toast_theme)
+
+- **force_theme** : force le mode **dark/light** (couleurs)
+- **toast_theme** : applique un **skin CSS** (amazon/google/dark) pour les toasts Bootstrap
+
+Quand `toast_theme` est différent de `default` et que `renderer: auto`, le bundle préfère automatiquement le renderer **bootstrap** pour que le skin CSS s'applique (iziToast ignore `toast_theme`).
+
+## CSS auto-link (fichiers séparés)
+
+Si `external_css: true` et `auto_link_css: true`, `wrap_notify_bootstrap()` injecte automatiquement les CSS suivants :
+
+- `wrap_notificator.base.css` (toujours)
+- + un fichier optionnel selon `toast_theme` :
+  - `wrap_notificator.amazon.css`
+  - `wrap_notificator.google.css`
+  - `wrap_notificator.dark.css`
 
 ## Sécurité & CORS
 

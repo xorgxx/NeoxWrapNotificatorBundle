@@ -140,7 +140,7 @@ Exemple dans un layout :
 
 ### Déclencher un toast depuis un lien ou un bouton
 
-Le bundle expose `window.wrapNotify.notifyBrowser(...)` (installé par `wrap_notify_bootstrap()`), qui permet de déclencher une notification côté navigateur (SweetAlert2 en toast si disponible, sinon toast Bootstrap).
+Le bundle expose `window.wrapNotify.notifyBrowser(...)` (installé par `wrap_notify_bootstrap()`), qui permet de déclencher une notification côté navigateur (iziToast si disponible, sinon toast Bootstrap).
 
 Exemple avec un lien `<a>` :
 

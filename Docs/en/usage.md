@@ -140,7 +140,7 @@ Example in a layout:
 
 ### Trigger a toast from a link or a button
 
-The bundle exposes `window.wrapNotify.notifyBrowser(...)` (installed by `wrap_notify_bootstrap()`), which lets you trigger a browser notification (SweetAlert2 toast when available, otherwise Bootstrap toast).
+The bundle exposes `window.wrapNotify.notifyBrowser(...)` (installed by `wrap_notify_bootstrap()`), which lets you trigger a browser notification (iziToast when available, otherwise Bootstrap toast).
 
 Example with an `<a>` link:
 

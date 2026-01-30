@@ -38,8 +38,74 @@ final class WrapNotifyExtension extends AbstractExtension
         if (!($this->wrap_notificator["enabled"] ?? false)) {
             return '';
         }
+        $renderer = 'auto';
+        $forceTheme = 'auto';
+        $toastTheme = 'default';
+        $externalCss = true;
+        $autoLinkCss = true;
+        $assetFallbackPrefix = '/bundles/wrapnotificator';
+        $ui = $this->wrap_notificator['ui'] ?? null;
+        if (is_array($ui) && isset($ui['renderer']) && is_string($ui['renderer']) && $ui['renderer'] !== '') {
+            $renderer = $ui['renderer'];
+        }
+        if (is_array($ui) && isset($ui['force_theme']) && is_string($ui['force_theme']) && $ui['force_theme'] !== '') {
+            $forceTheme = $ui['force_theme'];
+        }
+        if (is_array($ui) && isset($ui['toast_theme']) && is_string($ui['toast_theme']) && $ui['toast_theme'] !== '') {
+            $toastTheme = $ui['toast_theme'];
+        }
+        if (is_array($ui) && isset($ui['external_css'])) {
+            $externalCss = (bool) $ui['external_css'];
+        }
+        if (is_array($ui) && isset($ui['auto_link_css'])) {
+            $autoLinkCss = (bool) $ui['auto_link_css'];
+        }
+        if (is_array($ui) && isset($ui['asset_fallback_prefix']) && is_string($ui['asset_fallback_prefix']) && $ui['asset_fallback_prefix'] !== '') {
+            $assetFallbackPrefix = rtrim($ui['asset_fallback_prefix'], '/');
+        }
+        $renderer = strtolower(trim($renderer));
+        if (!in_array($renderer, ['auto', 'izitoast', 'bootstrap'], true)) {
+            $renderer = 'auto';
+        }
+
+        $forceTheme = strtolower(trim($forceTheme));
+        if (!in_array($forceTheme, ['auto', 'dark', 'light'], true)) {
+            $forceTheme = 'auto';
+        }
+
+        $toastTheme = strtolower(trim($toastTheme));
+        if (!in_array($toastTheme, ['default', 'dark', 'amazon', 'amazone', 'google'], true)) {
+            $toastTheme = 'default';
+        }
+        if ($toastTheme === 'amazone') {
+            $toastTheme = 'amazon';
+        }
+
+        $cssHtml = '';
+        if ($externalCss && $autoLinkCss) {
+            $paths = [
+                $assetFallbackPrefix . '/css/wrap_notificator.base.css',
+            ];
+            if ($toastTheme === 'amazon') {
+                $paths[] = $assetFallbackPrefix . '/css/wrap_notificator.amazon.css';
+            } elseif ($toastTheme === 'google') {
+                $paths[] = $assetFallbackPrefix . '/css/wrap_notificator.google.css';
+            } elseif ($toastTheme === 'dark') {
+                $paths[] = $assetFallbackPrefix . '/css/wrap_notificator.dark.css';
+            }
+
+            foreach ($paths as $href) {
+                $cssHtml .= sprintf("<link rel=\"stylesheet\" href=\"%s\" />\n", $href);
+            }
+        }
+
         // Expose global helpers and subscribe function; also export from the ES module
-        return <<<'HTML'
+        return $cssHtml.sprintf(
+            "<script>window.wrapNotifyConfig = window.wrapNotifyConfig || {}; window.wrapNotifyConfig.renderer = %s; window.wrapNotifyConfig.forceTheme = %s; window.wrapNotifyConfig.toastTheme = %s;</script>\n",
+            json_encode($renderer, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            json_encode($forceTheme, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            json_encode($toastTheme, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+        ). <<<'HTML'
 <script type="module">
     // Subscribe to Mercure topics. Uses EventSource with credentials to support JWT subscriber cookie
     function subscribeMercure(baseUrl, topics = [], onMessage = null, options = {}) {
@@ -90,6 +156,17 @@ final class WrapNotifyExtension extends AbstractExtension
         }
     }
 
+    function applyToastThemeToDocument() {
+        const toastTheme = getToastTheme();
+        const el = document.documentElement;
+        if (!el || !el.dataset) return;
+        if (toastTheme && toastTheme !== 'default') {
+            el.dataset.wrapToastTheme = toastTheme;
+        } else {
+            try { delete el.dataset.wrapToastTheme; } catch (_) { el.removeAttribute('data-wrap-toast-theme'); }
+        }
+    }
+
     function ensureToastContainer(position = 'top-right') {
         let container = document.getElementById('wrap-toast-container');
         if (!container) {
@@ -120,10 +197,23 @@ final class WrapNotifyExtension extends AbstractExtension
         return container;
     }
 
-    function showBootstrapToast({ title = 'Notification', body = '', delay = 5000, autohide = true, variant = 'info', icon = undefined, iconUrl = undefined, iconHtml = undefined, iconClass = undefined, iconAlt = undefined, density = 'cozy', position = 'top-right', rounded = true, shadow = 'md', glass = false, opacity = 1 } = {}) {
+    function showBootstrapToast({ title = '', body = '', delay = 5000, autohide = true, variant = 'info', icon = undefined, iconUrl = undefined, iconHtml = undefined, iconClass = undefined, iconAlt = undefined, density = 'cozy', position = 'top-right', rounded = true, shadow = 'md', glass = false, opacity = 1, showIcon = true, showAccent = true } = {}) {
         const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
         delay = clamp(Number(delay) || 5000, 1500, 15000);
         const container = ensureToastContainer(position);
+
+        const hasTitle = !!(title && String(title).trim().length);
+        const titleHtml = hasTitle ? ('<strong class="wrap-toast-title">' + title + '</strong>') : '';
+        const iconEnabled = showIcon !== false;
+
+        const toastTheme = getToastTheme();
+        const isGoogleTheme = toastTheme === 'google';
+        const closeHtml = isGoogleTheme
+            ? ''
+            : '<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>';
+        const actionsHtml = isGoogleTheme
+            ? '<div class="wrap-toast-actions"><button type="button" class="wrap-toast-dismiss" data-bs-dismiss="toast">Dismiss</button></div>'
+            : '';
 
         const variants = {
             info: 'info',
@@ -141,14 +231,16 @@ final class WrapNotifyExtension extends AbstractExtension
 
         // Small inline SVG fallbacks per variant (for when Bootstrap Icons are not available)
         const defaultSvgByVariant = {
-            info: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path fill="#fff" d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM8 4.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>',
-            success: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path fill="#fff" d="M11.03 5.97a.75.75 0 0 0-1.06-1.06L6.75 8.13 6 7.38a.75.75 0 1 0-1.06 1.06l1.25 1.25c.3.3.79.3 1.09 0l3.75-3.75z"/></svg>',
-            warning: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M7.938 2.016a1.13 1.13 0 0 1 2.02 0l6.857 12.5A1.13 1.13 0 0 1 15.857 16H2.143a1.13 1.13 0 0 1-.958-1.484L7.938 2.016z"/><path fill="#000" d="M8 6v4h1V6H8zm0 5v1h1v-1H8z"/></svg>',
-            danger: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path fill="#fff" d="M5.354 5.354a.5.5 0 1 1 .707-.707L8 6.586l1.939-1.939a.5.5 0 1 1 .707.707L8.707 7.293l1.939 1.939a.5.5 0 1 1-.707.707L8 8l-1.939 1.939a.5.5 0 1 1-.707-.707L7.293 7.293 5.354 5.354z"/></svg>'
+            info: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path fill="currentColor" d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM8 4.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>',
+            success: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path fill="currentColor" d="M11.03 5.97a.75.75 0 0 0-1.06-1.06L6.75 8.13 6 7.38a.75.75 0 1 0-1.06 1.06l1.25 1.25c.3.3.79.3 1.09 0l3.75-3.75z"/></svg>',
+            warning: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="M7.938 2.016a1.13 1.13 0 0 1 2.02 0l6.857 12.5A1.13 1.13 0 0 1 15.857 16H2.143a1.13 1.13 0 0 1-.958-1.484L7.938 2.016z"/><path fill="currentColor" d="M8 6v4h1V6H8zm0 5v1h1v-1H8z"/></svg>',
+            danger: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path fill="currentColor" d="M5.354 5.354a.5.5 0 1 1 .707-.707L8 6.586l1.939-1.939a.5.5 0 1 1 .707.707L8.707 7.293l1.939 1.939a.5.5 0 1 1-.707.707L8 8l-1.939 1.939a.5.5 0 1 1-.707-.707L7.293 7.293 5.354 5.354z"/></svg>'
         };
 
         const toastEl = document.createElement('div');
         toastEl.className = `toast wrap-toast is-${v} align-items-center border-0 overflow-hidden`;
+        toastEl.classList.add(hasTitle ? 'has-title' : 'no-title');
+        if (!iconEnabled) toastEl.classList.add('no-icon');
         toastEl.setAttribute('role', 'alert');
         toastEl.setAttribute('aria-live', 'assertive');
         toastEl.setAttribute('aria-atomic', 'true');
@@ -170,15 +262,20 @@ final class WrapNotifyExtension extends AbstractExtension
         progress.className = 'wrap-toast-progress';
 
         toastEl.innerHTML = `
-            <div class="toast-header bg-transparent border-0">
-                <strong class="me-auto">${title}</strong>
-                <span class="wrap-toast-icon" aria-hidden="true"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            <div class="wrap-toast-grid">
+                ${iconEnabled ? '<div class="wrap-toast-icon" aria-hidden="true"></div>' : ''}
+                <div class="wrap-toast-main">
+                    <div class="toast-header wrap-toast-header bg-transparent border-0">
+                        ${titleHtml}
+                        ${closeHtml}
+                    </div>
+                    <div class="toast-body wrap-toast-body">${body}</div>
+                    ${actionsHtml}
+                </div>
             </div>
-            <div class="toast-body">${body}</div>
         `;
         toastEl.prepend(progress);
-        toastEl.prepend(accent);
+        if (showAccent !== false) toastEl.prepend(accent);
         container.appendChild(toastEl);
 
         // Fill icon area
@@ -296,53 +393,208 @@ final class WrapNotifyExtension extends AbstractExtension
             .replaceAll("'", '&#039;');
     }
 
-    function hasSweetAlert() {
-        return !!(window.Swal && typeof window.Swal.fire === 'function');
+    function getRenderer() {
+        const raw = window.wrapNotifyConfig && window.wrapNotifyConfig.renderer
+            ? String(window.wrapNotifyConfig.renderer)
+            : 'auto';
+        const v = raw.toLowerCase().trim();
+        if (v === 'izitoast' || v === 'bootstrap') return v;
+        // When a toast skin is selected, prefer Bootstrap renderer so the skin CSS applies.
+        try {
+            const t = getToastTheme();
+            if (t && t !== 'default') return 'bootstrap';
+        } catch (e) {
+            // ignore
+        }
+        return 'auto';
     }
 
-    function showSweetAlertToast({ title = 'Notification', body = '', html = undefined, delay = 5000, variant = 'info' } = {}) {
+    function hasIziToast() {
+        return !!(window.iziToast && typeof window.iziToast.show === 'function');
+    }
+
+    function detectDarkMode() {
+        const el = document.documentElement;
+        const body = document.body;
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isBsDark = el && el.dataset && (el.dataset.bsTheme === 'dark');
+        const isClassDark = !!(
+            (el && el.classList && (el.classList.contains('dark') || el.classList.contains('theme-dark') || el.classList.contains('dark-mode'))) ||
+            (body && body.classList && (body.classList.contains('dark') || body.classList.contains('dark-mode') || body.classList.contains('body-state-toggled')))
+        );
+        return !!(prefersDark || isBsDark || isClassDark);
+    }
+
+    function getForcedTheme() {
+        const raw = window.wrapNotifyConfig && window.wrapNotifyConfig.forceTheme
+            ? String(window.wrapNotifyConfig.forceTheme)
+            : 'auto';
+        const v = raw.toLowerCase().trim();
+        if (v === 'dark' || v === 'light') return v;
+        return 'auto';
+    }
+
+    function getToastTheme() {
+        const raw = window.wrapNotifyConfig && window.wrapNotifyConfig.toastTheme
+            ? String(window.wrapNotifyConfig.toastTheme)
+            : 'default';
+        const v = raw.toLowerCase().trim();
+        if (v === 'amazon' || v === 'google' || v === 'dark' || v === 'default') return v;
+        if (v === 'amazone') return 'amazon';
+        return 'default';
+    }
+
+    function applyForcedThemeToDocument() {
+        const forced = getForcedTheme();
+        const el = document.documentElement;
+        if (!el || !el.dataset) return;
+
+        if (forced === 'dark' || forced === 'light') {
+            el.dataset.wrapNotifyTheme = forced;
+        } else {
+            try { delete el.dataset.wrapNotifyTheme; } catch (_) { el.removeAttribute('data-wrap-notify-theme'); }
+        }
+    }
+
+    function showIziToastToast({ title = '', body = '', delay = 5000, variant = 'info' } = {}) {
         const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
         delay = clamp(Number(delay) || 5000, 1500, 15000);
+
         const v = String(variant || 'info').toLowerCase();
-        let icon = 'info';
-        if (v === 'success' || v === 'ok' || v === 'done' || v === 'valid') icon = 'success';
-        else if (v === 'warning' || v === 'warn' || v === 'avertissement') icon = 'warning';
-        else if (v === 'danger' || v === 'error' || v === 'fail' || v === 'failed') icon = 'error';
+        const type = (v === 'danger' || v === 'error' || v === 'fail' || v === 'failed')
+            ? 'error'
+            : ((v === 'warning' || v === 'warn' || v === 'avertissement')
+                ? 'warning'
+                : ((v === 'success' || v === 'ok' || v === 'done' || v === 'valid')
+                    ? 'success'
+                    : 'info'));
 
-        const base = (window.toastQueue && typeof window.toastQueue.fire === 'function')
-            ? window.toastQueue
-            : ((window.toast && typeof window.toast.fire === 'function')
-                ? window.toast
-                : window.Swal);
-
+        const forcedTheme = getForcedTheme();
+        const isDark = forcedTheme === 'auto' ? detectDarkMode() : (forcedTheme === 'dark');
         try {
-            base.fire({
-                icon,
-                title: coerceText(title),
-                text: (html !== undefined && html !== null && String(html) !== '') ? undefined : coerceText(body),
-                html: (html !== undefined && html !== null && String(html) !== '') ? String(html) : undefined,
-                timer: delay,
-                timerProgressBar: true,
-                didOpen: (toast) => {
-                    try {
-                        if (window.Swal && typeof window.Swal.stopTimer === 'function') {
-                            toast.addEventListener('mouseenter', window.Swal.stopTimer);
-                        }
-                        if (window.Swal && typeof window.Swal.resumeTimer === 'function') {
-                            toast.addEventListener('mouseleave', window.Swal.resumeTimer);
-                        }
-                    } catch (_) {}
-                },
-            });
+            const toastOptions = {
+                message: coerceText(body),
+                position: 'topRight',
+                timeout: delay,
+                progressBar: true,
+                pauseOnHover: true,
+                closeOnClick: true,
+                theme: isDark ? 'dark' : 'light',
+                class: 'wrap-notify-izi',
+            };
+            const t = String(title || '').trim();
+            if (t.length) {
+                toastOptions.title = coerceText(t);
+            }
+            window.iziToast[type](toastOptions);
         } catch (e) {
             showBootstrapToast({ title: coerceText(title), body: coerceText(body), variant: v, delay });
         }
     }
 
+    function createLegacyToastHelpers() {
+        if (window.toast && typeof window.toast.fire === 'function') {
+            return;
+        }
+
+        const mapIconToType = (icon) => {
+            const v = String(icon || '').toLowerCase();
+            if (v === 'success') return 'success';
+            if (v === 'error' || v === 'danger') return 'error';
+            if (v === 'warning' || v === 'warn') return 'warning';
+            return 'info';
+        };
+
+        const normalizeToastOptions = (options = {}) => {
+            const type = mapIconToType(options.icon);
+            const title = options.title ?? '';
+            const message = options.html ?? options.message ?? '';
+            const timeout = typeof options.timer === 'number' ? options.timer : 3000;
+            return { type, title, message, timeout };
+        };
+
+        window.toast = {
+            fire: (options = {}) => {
+                const { type, title, message, timeout } = normalizeToastOptions(options);
+                const renderer = getRenderer();
+                if ((renderer === 'auto' || renderer === 'izitoast') && hasIziToast()) {
+                    const forcedTheme = getForcedTheme();
+                    const isDark = forcedTheme === 'auto' ? detectDarkMode() : (forcedTheme === 'dark');
+                    const fn = typeof window.iziToast[type] === 'function' ? window.iziToast[type] : window.iziToast.info;
+                    const toastOptions = {
+                        message: coerceText(message),
+                        position: 'topRight',
+                        timeout,
+                        progressBar: true,
+                        pauseOnHover: true,
+                        closeOnClick: true,
+                        theme: isDark ? 'dark' : 'light',
+                        displayMode: undefined,
+                        class: 'wrap-notify-izi',
+                    };
+                    const t = String(title || '').trim();
+                    if (t.length) {
+                        toastOptions.title = coerceText(t);
+                    }
+                    return fn(toastOptions);
+                }
+
+                const v = (type === 'error') ? 'danger' : type;
+                return showBootstrapToast({ title: coerceText(title), body: coerceText(message), variant: v, delay: timeout });
+            },
+        };
+
+        if (!window.toastQueue || typeof window.toastQueue.fire !== 'function') {
+            let toastQueueChain = Promise.resolve();
+            window.toastQueue = {
+                fire: (options = {}) => {
+                    toastQueueChain = toastQueueChain
+                        .catch(() => {})
+                        .then(() => Promise.resolve(window.toast.fire(options)));
+                    return toastQueueChain;
+                },
+            };
+        }
+    }
+
+    function createToastNotifier() {
+        const normalizeType = (type) => {
+            const t = String(type || 'info').toLowerCase();
+            if (t === 'success') return 'success';
+            if (t === 'error' || t === 'danger') return 'danger';
+            if (t === 'warning' || t === 'warn') return 'warning';
+            return 'info';
+        };
+
+        const showToast = (message = {}) => {
+            const type = normalizeType(message.type);
+            const timer = message.timer ?? message.delay ?? message.duration ?? 3000;
+            const title = message.title ?? '';
+            const text = message.text ?? message.body ?? message.message ?? '';
+
+            const renderer = getRenderer();
+            if ((renderer === 'auto' || renderer === 'izitoast') && hasIziToast()) {
+                showIziToastToast({ title, body: text, delay: timer, variant: type });
+                return;
+            }
+
+            showBootstrapToast({ title: coerceText(title), body: coerceText(text), variant: type, delay: timer });
+        };
+
+        const showToasts = (messages = []) => {
+            if (!Array.isArray(messages)) return;
+            for (const m of messages) {
+                showToast(m);
+            }
+        };
+
+        return { showToast, showToasts };
+    }
+
     function notifyBrowser(detail) {
         const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
         const payload = detail && detail.payload !== undefined ? detail.payload : null;
-        let title = 'Notification';
+        let title = '';
         let body = '';
         let html = undefined;
         let variant = 'info'; // default to info if no level provided
@@ -359,7 +611,7 @@ final class WrapNotifyExtension extends AbstractExtension
         if (payload && typeof payload === 'object') {
             // Grouped flashes: one popup with list
             if ((payload.type === 'flash_group' || payload.grouped === true) && Array.isArray(payload.messages)) {
-                title = payload.title || 'Notifications';
+                title = '';
                 const msgs = payload.messages;
                 let maxW = 1;
                 for (const it of msgs) {
@@ -367,14 +619,22 @@ final class WrapNotifyExtension extends AbstractExtension
                     if (w > maxW) maxW = w;
                 }
                 variant = (maxW >= 4) ? 'danger' : ((maxW === 3) ? 'warning' : ((maxW === 2) ? 'success' : 'info'));
-                const items = msgs.map((it) => {
+                const normalizeItemVariant = (it) => {
+                    const raw = it && (it.level ?? it.type ?? it.variant ?? it.status ?? it.severity ?? it.kind);
+                    const v = String(raw || 'info').toLowerCase();
+                    if (v === 'danger' || v === 'error' || v === 'fail' || v === 'failed') return 'danger';
+                    if (v === 'warning' || v === 'warn' || v === 'avertissement') return 'warning';
+                    if (v === 'success' || v === 'ok' || v === 'done' || v === 'valid') return 'success';
+                    return 'info';
+                };
+
+                const itemsHtml = msgs.map((it) => {
                     const msg = it && (it.message ?? it.text ?? it.body) !== undefined ? (it.message ?? it.text ?? it.body) : it;
-                    return coerceText(msg);
-                });
-                const itemsHtml = items.map((m) => `<li>${escapeHtml(m)}</li>`).join('');
-                html = `<ul style="margin:0; padding-left: 1.25rem;">${itemsHtml}</ul>`;
-                // Bootstrap fallback uses innerHTML for body, so provide a safe <br>-separated HTML string.
-                body = items.map((m) => escapeHtml(m)).join('<br>');
+                    const itemVariant = normalizeItemVariant(it);
+                    return `<div class="wrap-toast-message is-${itemVariant}"><span class="wrap-toast-dot" aria-hidden="true"></span><span class="wrap-toast-message-text">${escapeHtml(coerceText(msg))}</span></div>`;
+                }).join('');
+                html = `<div class="wrap-toast-messages wrap-toast-messages-flash-group">${itemsHtml}</div>`;
+                body = html;
             } else {
             title = payload.title || payload.subject || title;
             body = payload.body || payload.message || payload.text || coerceText(payload.data || payload);
@@ -409,8 +669,18 @@ final class WrapNotifyExtension extends AbstractExtension
         const glass = payload && (payload.glass ?? (payload.ui && payload.ui.glass)) !== undefined ? (payload.glass ?? payload.ui.glass) : false;
         const opacity = payload && (payload.opacity ?? (payload.ui && payload.ui.opacity)) !== undefined ? Number(payload.opacity ?? payload.ui.opacity) : 1;
 
-        if (hasSweetAlert()) {
-            showSweetAlertToast({ title: coerceText(title), body: coerceText(body), html, variant, delay });
+        const isFlashGroup = !!(payload && typeof payload === 'object' && (payload.type === 'flash_group' || payload.grouped === true) && Array.isArray(payload.messages));
+
+        // flash_group: always use Bootstrap renderer so we can display structured HTML list
+        if (isFlashGroup) {
+            showBootstrapToast({ title: coerceText(title), body: coerceText(body), variant, delay, density, position, rounded, shadow, glass, opacity, showIcon: false, showAccent: false });
+            return;
+        }
+
+        const renderer = getRenderer();
+        if ((renderer === 'auto' || renderer === 'izitoast') && hasIziToast()) {
+            // iziToast does not support arbitrary HTML message reliably; use plain text.
+            showIziToastToast({ title: coerceText(title), body: coerceText(body), variant, delay });
         } else {
             showBootstrapToast({ title: coerceText(title), body: coerceText(body), variant, delay, icon: iconUrl, iconUrl, iconHtml, iconClass, iconAlt, density, position, rounded, shadow, glass, opacity });
         }
@@ -453,10 +723,13 @@ final class WrapNotifyExtension extends AbstractExtension
 
     // expose globally so other inline modules/scripts can reuse it
     window.subscribeMercure = subscribeMercure;
-    window.wrapNotify = { showBootstrapToast, notifyBrowser, notifySystem };
+    window.wrapNotify = { showBootstrapToast, notifyBrowser, notifySystem, createToastNotifier };
+    applyForcedThemeToDocument();
+    applyToastThemeToDocument();
+    createLegacyToastHelpers();
 
     // also export from the module context
-    export { subscribeMercure, showBootstrapToast, notifyBrowser, notifySystem };
+    export { subscribeMercure, showBootstrapToast, notifyBrowser, notifySystem, createToastNotifier };
 </script>
 HTML;
     }

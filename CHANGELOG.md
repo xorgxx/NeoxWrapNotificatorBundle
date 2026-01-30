@@ -9,16 +9,30 @@ All notable changes to this project will be documented in this file.
     - Flash messages can be published via Mercure on `kernel.response` and displayed instantly as toasts.
 - EN — Docs: added examples to trigger browser toasts from a link/button via `window.wrapNotify.notifyBrowser(...)`.
 - EN — Added SweetAlert2 toast auto-detection:
-    - When `window.Swal.fire` is available, browser notifications (including Live Flash) are rendered via SweetAlert2 toast.
-    - Otherwise, it falls back to Bootstrap toasts.
+    - Replaced SweetAlert2 renderer with iziToast (`window.iziToast`) for browser notifications.
+    - Added `wrap_notificator.mercure.ui.renderer` to choose between `auto`, `izitoast` and `bootstrap`.
+- EN — UI toast theming & styling:
+    - Added `wrap_notificator.mercure.ui.force_theme` (`auto|dark|light`) to force dark/light UI.
+    - Added `wrap_notificator.mercure.ui.toast_theme` (`default|amazon|google|dark`) to apply a toast skin.
+    - CSS is now split into `wrap_notificator.base.css` + optional theme CSS (`amazon|google|dark`) and can be auto-injected by `wrap_notify_bootstrap()`.
+    - When `toast_theme != default` and `renderer=auto`, Bootstrap renderer is preferred so the skin applies consistently (iziToast ignores `toast_theme`).
+    - Modernized grouped flash toasts (flash_group): improved layout, optional icon removal, and per-item colored dot list.
+    - Scoped iziToast dark overrides to bundle-created toasts via `.wrap-notify-izi`.
 - FR — Ajout de la fonctionnalité Live Flash :
     - Nouvel attribut `#[LiveFlash]` pour activer/désactiver le live flash par contrôleur/méthode.
     - Nouvelle configuration `wrap_notificator.live_flash` (activation globale + préfixe de topic + consommation + regroupement optionnel).
     - Publication des flashes via Mercure sur `kernel.response` pour affichage instantané en toasts.
 - FR — Docs : ajout d'exemples pour déclencher un toast navigateur depuis un lien/bouton via `window.wrapNotify.notifyBrowser(...)`.
 - FR — Ajout de l'auto-détection SweetAlert2 (toast) :
-    - Si `window.Swal.fire` est disponible, les notifications navigateur (y compris Live Flash) utilisent SweetAlert2 en toast.
-    - Sinon, fallback sur les toasts Bootstrap.
+    - Remplacement du renderer SweetAlert2 par iziToast (`window.iziToast`) pour les notifications navigateur.
+    - Ajout de `wrap_notificator.mercure.ui.renderer` pour choisir entre `auto`, `izitoast` et `bootstrap`.
+- FR — Thématisation UI des toasts :
+    - Ajout de `wrap_notificator.mercure.ui.force_theme` (`auto|dark|light`) pour forcer le thème dark/light.
+    - Ajout de `wrap_notificator.mercure.ui.toast_theme` (`default|amazon|google|dark`) pour appliquer un skin de toast.
+    - CSS séparé en `wrap_notificator.base.css` + CSS de thème optionnel (`amazon|google|dark`), auto-injectable via `wrap_notify_bootstrap()`.
+    - Quand `toast_theme != default` et `renderer=auto`, le renderer Bootstrap est préféré pour garantir l'application du skin (iziToast ignore `toast_theme`).
+    - Modernisation des flashes groupés (flash_group) : layout modernisé, suppression optionnelle de l'icône, liste avec point coloré par item.
+    - Overrides dark d'iziToast scoppés uniquement aux toasts du bundle via `.wrap-notify-izi`.
 
 ## [1.3.1] - 2026-01-09
 - EN — Documentation and examples update:
