@@ -161,6 +161,38 @@ Si iziToast est chargé dans la page (présence de `window.iziToast`), le bundle
 
 Sinon, le rendu retombe sur les **toasts Bootstrap**.
 
+### Flash Symfony "classiques" (sans Mercure)
+
+Si vous ne souhaitez pas utiliser Mercure (ou si `live_flash.enabled=false`), vous pouvez quand même afficher les flash messages Symfony avec le thème WrapNotificator.
+
+Dans votre layout, incluez d'abord les helpers UI :
+
+```twig
+{{ wrap_notify_bootstrap() }}
+```
+
+Puis affichez les flashes (consommation via `app.flashes`) :
+
+```twig
+{{ wrap_notify_flashes(app.flashes) }}
+```
+
+Options supportées :
+
+```twig
+{# Désactiver localement #}
+{{ wrap_notify_flashes(app.flashes, { enabled: false }) }}
+
+{# Filtrer par types (niveaux) #}
+{{ wrap_notify_flashes(app.flashes, { only: ['success', 'danger'] }) }}
+
+{# Titre commun (optionnel) #}
+{{ wrap_notify_flashes(app.flashes, { title: 'Notification' }) }}
+
+{# Désactiver la file (toastQueue) et déclencher directement #}
+{{ wrap_notify_flashes(app.flashes, { useQueue: false }) }}
+```
+
 ## Dépannage rapide
 
 - **Aucun toast ?** Vérifiez `wrap_notify_bootstrap()`, `wrap_notificator.mercure.enabled=true`, et l’URL publique Mercure.

@@ -24,6 +24,7 @@ final class WrapNotifyExtension extends AbstractExtension
             new TwigFunction('wrap_notify_browser', $this->renderBrowser(...), [ 'is_safe' => [ 'html']]),
             new TwigFunction('wrap_notify_system', $this->renderSystem(...), [ 'is_safe' => [ 'html']]),
             new TwigFunction('wrap_notify_form', $this->renderNotifyForm(...), [ 'is_safe' => [ 'html']]),
+            new TwigFunction('wrap_notify_flashes', $this->renderFlashes(...), [ 'is_safe' => [ 'html']]),
         ];
     }
 
@@ -32,6 +33,89 @@ final class WrapNotifyExtension extends AbstractExtension
         return sprintf('{{ render(controller("Neox\\\\WrapNotificatorBundle\\\\Controller\\\\NotificationWidgetController::renderForm", {type: "%s"})) }}', $type);
     }
 
+    /**
+     * Render classic Symfony flash messages (no Mercure) using the UI/renderer from wrap_notify_bootstrap().
+     *
+     * Usage: {{ wrap_notify_flashes(app.flashes) }}
+     *
+     * @param array<string, mixed> $flashes
+     * @param array<string, mixed> $options
+     */
+    public function renderFlashes(array $flashes = [], array $options = []): string
+    {
+        $enabled = true;
+        if (array_key_exists('enabled', $options)) {
+            $enabled = (bool) $options['enabled'];
+        }
+        if (!$enabled) {
+            return '';
+        }
+
+        $only = null;
+        if (array_key_exists('only', $options)) {
+            $only = is_array($options['only']) ? array_values($options['only']) : null;
+        }
+
+        $title = '';
+        if (array_key_exists('title', $options) && is_string($options['title'])) {
+            $title = $options['title'];
+        }
+
+        $useQueue = true;
+        if (array_key_exists('useQueue', $options)) {
+            $useQueue = (bool) $options['useQueue'];
+        }
+
+        $payload = [];
+        foreach ($flashes as $type => $messages) {
+            if (!is_string($type) || $type === '') {
+                continue;
+            }
+            if ($only !== null && !in_array($type, $only, true)) {
+                continue;
+            }
+            if (!is_iterable($messages)) {
+                continue;
+            }
+            foreach ($messages as $message) {
+                $payload[] = [
+                    'type' => $type,
+                    'message' => (string) $message,
+                ];
+            }
+        }
+
+        if ($payload === []) {
+            return '';
+        }
+
+        $payloadJs = json_encode($payload, JSON_THROW_ON_ERROR);
+        $titleJs = json_encode($title, JSON_THROW_ON_ERROR);
+        $useQueueJs = $useQueue ? 'true' : 'false';
+
+        return <<<HTML
+<script type="module">
+    const payload = {$payloadJs};
+    const title = {$titleJs};
+    const useQueue = {$useQueueJs};
+
+    const fire = (item) => {
+        const opts = { icon: item.type, title: title || '', message: item.message };
+        if (useQueue && window.toastQueue && typeof window.toastQueue.fire === 'function') {
+            return window.toastQueue.fire(opts);
+        }
+        if (window.toast && typeof window.toast.fire === 'function') {
+            return window.toast.fire(opts);
+        }
+        console.warn('[WrapNotificator] toast helpers not available (include wrap_notify_bootstrap() first).');
+    };
+
+    for (const item of payload) {
+        fire(item);
+    }
+</script>
+HTML;
+    }
 
     public function renderBootstrap(): string
     {

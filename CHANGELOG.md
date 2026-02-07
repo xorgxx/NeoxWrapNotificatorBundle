@@ -3,10 +3,13 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [1.4.0] - 2026-02-07
 - EN — Added Live Flash feature:
     - New attribute `#[LiveFlash]` to enable/disable live flash publishing per controller/method.
     - New `wrap_notificator.live_flash` configuration (global enable + topic prefix + consume + optional grouping).
     - Flash messages can be published via Mercure on `kernel.response` and displayed instantly as toasts.
+- EN — Added Twig helper `wrap_notify_flashes(app.flashes, options)` to render classic Symfony flash messages (without Mercure) using the WrapNotificator UI/theme.
 - EN — Docs: added examples to trigger browser toasts from a link/button via `window.wrapNotify.notifyBrowser(...)`.
 - EN — Added SweetAlert2 toast auto-detection:
     - Replaced SweetAlert2 renderer with iziToast (`window.iziToast`) for browser notifications.
@@ -22,6 +25,7 @@ All notable changes to this project will be documented in this file.
     - Nouvel attribut `#[LiveFlash]` pour activer/désactiver le live flash par contrôleur/méthode.
     - Nouvelle configuration `wrap_notificator.live_flash` (activation globale + préfixe de topic + consommation + regroupement optionnel).
     - Publication des flashes via Mercure sur `kernel.response` pour affichage instantané en toasts.
+- FR — Ajout du helper Twig `wrap_notify_flashes(app.flashes, options)` pour afficher les flash messages Symfony classiques (sans Mercure) avec le thème/UI WrapNotificator.
 - FR — Docs : ajout d'exemples pour déclencher un toast navigateur depuis un lien/bouton via `window.wrapNotify.notifyBrowser(...)`.
 - FR — Ajout de l'auto-détection SweetAlert2 (toast) :
     - Remplacement du renderer SweetAlert2 par iziToast (`window.iziToast`) pour les notifications navigateur.
