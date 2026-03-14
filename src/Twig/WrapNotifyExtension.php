@@ -25,7 +25,13 @@ final class WrapNotifyExtension extends AbstractExtension
             new TwigFunction('wrap_notify_system', $this->renderSystem(...), [ 'is_safe' => [ 'html']]),
             new TwigFunction('wrap_notify_form', $this->renderNotifyForm(...), [ 'is_safe' => [ 'html']]),
             new TwigFunction('wrap_notify_flashes', $this->renderFlashes(...), [ 'is_safe' => [ 'html']]),
+            new TwigFunction('wrap_notify_config', $this->getConfig(...)),
         ];
+    }
+
+    public function getConfig(): array
+    {
+        return $this->wrap_notificator;
     }
 
     public function renderNotifyForm(string $type): string

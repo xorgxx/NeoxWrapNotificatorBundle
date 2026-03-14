@@ -9,7 +9,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 final class SmsNotificationDto implements NotificationDtoInterface
 {
     #[Assert\NotBlank]
-    public string $to = '';
+    public string $sender = '';
+
+    #[Assert\NotBlank]
+    public string $recipient = '';
 
     #[Assert\NotBlank]
     public string $content = '';

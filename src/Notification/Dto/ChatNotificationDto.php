@@ -9,6 +9,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 final class ChatNotificationDto implements NotificationDtoInterface
 {
     #[Assert\NotBlank]
+    public string $sender = '';
+
+    #[Assert\NotBlank]
     public string $transport = '';
 
     #[Assert\NotBlank]

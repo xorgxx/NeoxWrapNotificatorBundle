@@ -13,16 +13,27 @@ use Neox\WrapNotificatorBundle\Notification\Dto\PushNotificationDto;
 use Neox\WrapNotificatorBundle\Notification\Dto\SmsNotificationDto;
 use Neox\WrapNotificatorBundle\Service\NotifierFacade;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class NotificationWidgetController extends AbstractController
 {
-    public function __construct(private readonly NotifierFacade $facade)
-    {
+    /**
+     * @param array<string,mixed> $config
+     */
+    public function __construct(
+        private readonly NotifierFacade $facade,
+        private readonly array $config,
+        private readonly TranslatorInterface $translator,
+    ) {
     }
 
-    public function renderForm(Request $request, string $type, ?string $action = null, array|string $exclude = [], array $data = []): Response
+    #[Route('/wrap-notificator/form/{type}', name: 'wrap_notificator_form', methods: ['GET', 'POST'])]
+    public function renderForm(Request $request, string $type): Response
     {
         $dto = match ($type) {
             'email'     => new EmailNotificationDto(),
@@ -33,19 +44,28 @@ final class NotificationWidgetController extends AbstractController
             default     => throw new \InvalidArgumentException("Unknown notification type: $type"),
         };
 
+        $data = $request->query->all();
         foreach ($data as $key => $value) {
-            if (property_exists($dto, $key)) {
+            if ($key !== 'exclude' && property_exists($dto, $key)) {
                 $dto->$key = $value;
             }
         }
 
-        $formOptions = [];
-        if ($action) {
-            $formOptions['action'] = $action;
+        $defaultRecipients = $this->config['default_recipients'] ?? [];
+        if (isset($defaultRecipients[$type]) && property_exists($dto, 'recipient')) {
+            $dto->recipient = $defaultRecipients[$type];
         }
 
-        if (is_string($exclude)) {
+        // Note: sender is NOT auto-filled - it should be provided by the user (client email in contact forms)
+        // If you need to auto-fill sender for specific use cases, configure it via query parameters
+
+        $formOptions = [];
+        
+        $exclude = $request->query->get('exclude', '');
+        if (is_string($exclude) && $exclude !== '') {
             $exclude = array_map('trim', explode(',', $exclude));
+        } else {
+            $exclude = [];
         }
         $formOptions['exclude_fields'] = $exclude;
 
@@ -54,12 +74,48 @@ final class NotificationWidgetController extends AbstractController
 
         $status = null;
         if ($form->isSubmitted() && $form->isValid()) {
-            $status = $this->facade->send($dto);
-            if ($status->status === DeliveryStatus::STATUS_FAILED) {
-                $this->addFlash('error', "Failed to send $type notification: " . $status->message);
+            // Apply email template for contact forms if enabled
+            if ($dto instanceof EmailNotificationDto && ($this->config['email_template']['enabled'] ?? true)) {
+                $dto->template = $this->config['email_template']['template'] ?? '@WrapNotificator/email/contact_form.html.twig';
+                $dto->templateVars = [
+                    'sender' => $dto->sender,
+                    'subject' => $dto->subject,
+                    'content' => $dto->content,
+                    'attachments' => array_map(fn($file) => [
+                        'name' => $file->getClientOriginalName(),
+                        'mime' => $file->getMimeType() ?? 'application/octet-stream'
+                    ], $dto->attachments),
+                    'receivedAt' => new \DateTimeImmutable(),
+                    'clientIp' => $request->getClientIp()
+                ];
             }
-            else {
-                $this->addFlash('success', ucfirst($type) . " notification sent successfully! (Status: {$status->status})");
+            
+            $status = $this->facade->send($dto);
+            $flashType = 'info';
+            $flashMessage = $this->translator->trans('wrap_notificator.form.queued', ['%type%' => $type], 'messages');
+            $closeModal = false;
+
+            if ($status->status === DeliveryStatus::STATUS_FAILED) {
+                $flashType = 'error';
+                $flashMessage = $this->translator->trans('wrap_notificator.form.failed', ['%type%' => $type], 'messages');
+            } elseif ($status->status === DeliveryStatus::STATUS_SENT) {
+                $flashType = 'success';
+                $flashMessage = $this->translator->trans('wrap_notificator.form.sent', ['%type%' => $type], 'messages');
+                $closeModal = true;
+            }
+
+            $this->addFlash($flashType, $flashMessage);
+            
+            // For AJAX requests, return success response to trigger modal close
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse([
+                    'ok' => $status->status !== DeliveryStatus::STATUS_FAILED,
+                    'closeModal' => $closeModal,
+                    'status' => $status->toArray(),
+                    'flashes' => [
+                        ['type' => $flashType, 'message' => $flashMessage],
+                    ],
+                ]);
             }
         }
 

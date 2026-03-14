@@ -67,15 +67,20 @@ class NotifierFacade
             $dto instanceof EmailNotificationDto => $this->notifyEmail(
                 $dto->subject,
                 $dto->content ?? '',
-                $dto->to,
+                $dto->recipient,
                 $dto->isHtml,
-                ['template' => $dto->template, 'vars' => $dto->templateVars],
+                [
+                    'template' => $dto->template,
+                    'vars' => $dto->templateVars,
+                    'from' => [$dto->sender, ''],
+                    'attachments' => $this->convertUploadedFilesToAttachments($dto->attachments)
+                ],
                 $metadata,
                 $ctx
             ),
             $dto instanceof SmsNotificationDto => $this->notifySms(
                 $dto->content,
-                $dto->to,
+                $dto->recipient,
                 $metadata,
                 $ctx
             ),
@@ -398,6 +403,26 @@ class NotifierFacade
             return $status;
         }
         return $status->withMetadata($metadata);
+    }
+
+    /**
+     * Convert UploadedFile objects to attachment format for MessageFactory
+     * @param array<int, \Symfony\Component\HttpFoundation\File\UploadedFile> $uploadedFiles
+     * @return array<int, array{path: string, name: string, mime: string}>
+     */
+    private function convertUploadedFilesToAttachments(array $uploadedFiles): array
+    {
+        $attachments = [];
+        foreach ($uploadedFiles as $file) {
+            if ($file instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
+                $attachments[] = [
+                    'path' => $file->getPathname(),
+                    'name' => $file->getClientOriginalName(),
+                    'mime' => $file->getMimeType() ?? 'application/octet-stream'
+                ];
+            }
+        }
+        return $attachments;
     }
 
     /**

@@ -44,6 +44,9 @@ services:
 
     # Controllers
     Neox\WrapNotificatorBundle\Controller\NotificationWidgetController:
+        arguments:
+            $config: '%wrap_notificator%'
+            $translator: '@translator'
         public: true
         tags: ['controller.service_arguments']
 
@@ -86,3 +89,8 @@ services:
         arguments:
             $config: '%wrap_notificator%'
         tags: ['console.command']
+
+    Neox\WrapNotificatorBundle\Validator\Constraints\AttachmentsValidationValidator:
+        arguments:
+            $config: '%wrap_notificator.attachments_validation%'
+        tags: ['validator.constraint_validator']

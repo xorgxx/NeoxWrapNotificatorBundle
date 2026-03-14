@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- EN — Email attachments security:
+    - Attachment validation is now configurable via `wrap_notificator.attachments_validation`.
+    - Introduced a custom Symfony constraint `AttachmentsValidation` used by `EmailNotificationDto::$attachments`.
+    - Defaults remain: max 5 files, max size 1M, and a safe MIME whitelist.
+
+- EN — Twig modal button macro:
+    - Removed the `transparent` option; styling is now controlled via the `class` parameter only.
+    - Kept icon-only behavior via `icon_class` (with `aria-label`).
+
+- FR — Sécurité des pièces jointes Email :
+    - La validation des pièces jointes est désormais configurable via `wrap_notificator.attachments_validation`.
+    - Ajout d'une contrainte Symfony custom `AttachmentsValidation` utilisée par `EmailNotificationDto::$attachments`.
+    - Les valeurs par défaut restent : 5 fichiers max, 1M max, et une whitelist de MIME types.
+
+- FR — Macro Twig bouton de modale :
+    - Suppression de l'option `transparent` ; le style est désormais contrôlé uniquement via le paramètre `class`.
+    - Conservation du comportement icône-only via `icon_class` (avec `aria-label`).
+
 - EN — Added CLI command `wrap:notificator:config`:
     - Displays all WrapNotificator bundle configuration (Mercure, UI, logging, live_flash).
     - Supports `--json` flag for machine-readable output.

@@ -63,6 +63,53 @@ final class Configuration implements ConfigurationInterface
             ->end()
         ->end();
 
+        $children->arrayNode('default_recipients')
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->scalarNode('email')->defaultNull()->end()
+                ->scalarNode('sms')->defaultNull()->end()
+                ->scalarNode('chat')->defaultNull()->end()
+            ->end()
+        ->end();
+
+        $children->arrayNode('default_senders')
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->scalarNode('email')->defaultNull()->end()
+                ->scalarNode('sms')->defaultNull()->end()
+            ->end()
+        ->end();
+
+        $children->arrayNode('email_template')
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->booleanNode('enabled')->defaultTrue()->end()
+                ->scalarNode('template')->defaultValue('@WrapNotificator/email/contact_form.html.twig')->end()
+            ->end()
+        ->end();
+
+        $children->arrayNode('attachments_validation')
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->integerNode('max_files')->defaultValue(5)->min(0)->end()
+                ->scalarNode('max_size')->defaultValue('1M')->end()
+                ->arrayNode('mime_types')
+                    ->prototype('scalar')->end()
+                    ->defaultValue([
+                        'application/pdf',
+                        'image/png',
+                        'image/jpeg',
+                        'image/gif',
+                        'text/plain',
+                        'application/msword',
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        'application/vnd.ms-excel',
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    ])
+                ->end()
+            ->end()
+        ->end();
+
         $children->arrayNode('live_flash')
             ->addDefaultsIfNotSet()
             ->children()

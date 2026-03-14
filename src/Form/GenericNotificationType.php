@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Neox\WrapNotificatorBundle\Form;
 
-use Karser\Recaptcha3Bundle\Form\Type\Recaptcha3Type;
+//use Karser\Recaptcha3Bundle\Form\Type\Recaptcha3Type;
+use Karser\Recaptcha3Bundle\Form\Recaptcha3Type;
 use Karser\Recaptcha3Bundle\Validator\Constraints\Recaptcha3;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -40,17 +42,23 @@ final class GenericNotificationType extends AbstractType
             $type = $property->getType();
             $typeName = $type instanceof \ReflectionNamedType ? $type->getName() : null;
 
-            $formType = match ($typeName) {
-                'bool' => CheckboxType::class,
-                'int', 'float' => NumberType::class,
-                'array' => TextareaType::class, // Simplified for dynamic forms, could be improved
-                default => ($name === 'content' || $name === 'data') ? TextareaType::class : TextType::class,
-            };
+            // Special handling for attachments field
+            if ($name === 'attachments') {
+                $formType = FileType::class;
+            } else {
+                $formType = match ($typeName) {
+                    'bool' => CheckboxType::class,
+                    'int', 'float' => NumberType::class,
+                    'array' => TextareaType::class, // Simplified for dynamic forms, could be improved
+                    default => ($name === 'content' || $name === 'data') ? TextareaType::class : TextType::class,
+                };
+            }
 
             $fieldOptions = [
                 'label' => 'contact.form.' . $name,
                 'required' => !$type?->allowsNull(),
                 'property_path' => $name,
+                'translation_domain' => 'messages',
                 'attr' => [
                     'class' => $formType === CheckboxType::class ? 'form-check-input' : 'form-control',
                     'placeholder' => 'contact.placeholder.' . $name,
@@ -72,18 +80,36 @@ final class GenericNotificationType extends AbstractType
                 $fieldOptions['required'] = false;
             }
 
+            if ($name === 'attachments') {
+                $fieldOptions['multiple'] = true;
+                $fieldOptions['required'] = false;
+                $fieldOptions['attr']['accept'] = '.pdf,.png,.jpg,.jpeg,.gif,.txt,.doc,.docx,.xls,.xlsx';
+            }
+
             $builder->add($name, $formType, $fieldOptions);
         }
 
-        if (!in_array('captcha', $excludeFields, true) && class_exists(Recaptcha3Type::class)) {
-            $builder->add('captcha', Recaptcha3Type::class, [
+        $recaptchaType = null;
+
+        if (class_exists(\Karser\Recaptcha3Bundle\Form\Recaptcha3Type::class)) {
+            $recaptchaType = \Karser\Recaptcha3Bundle\Form\Recaptcha3Type::class;
+        } elseif (class_exists(\Karser\Recaptcha3Bundle\Form\Type\Recaptcha3Type::class)) {
+            $recaptchaType = \Karser\Recaptcha3Bundle\Form\Type\Recaptcha3Type::class;
+        }
+
+        if ($recaptchaType && !in_array('captcha', $excludeFields, true)) {
+            $builder->add('captcha', $recaptchaType, [
                 'mapped' => false,
                 'constraints' => [new Recaptcha3()],
+                'action_name' => 'wrap_notificator_form',
             ]);
         }
 
         if (!in_array('send', $excludeFields, true)) {
-            $builder->add('send', SubmitType::class);
+            $builder->add('send', SubmitType::class, [
+                'label' => 'contact.form.send',
+                'translation_domain' => 'messages',
+            ]);
         }
     }
 
