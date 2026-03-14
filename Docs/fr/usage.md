@@ -58,6 +58,35 @@ $facade->notifyChat('slack', 'Déploiement terminé ✅', 'Release 1.2.3', ['cha
 $facade->notifyChat('telegram', '<b>Alerte</b> Service lent', null, ['chatId' => 123456, 'parseMode' => 'HTML']);
 ```
 
+#### Chat : payloads non-string et transports avancés (Discord, ...)
+
+`notifyChat()` accepte aussi des payloads non-string pour `content` (array/objet/Stringable) : ils sont normalisés en string (JSON si pertinent).
+
+Pour les transports avancés comme **Discord** (embeds/options), il est recommandé de construire directement un `ChatMessage` et de le passer en `content`.
+
+**Note :** l'envoi différé (`DeliveryContext::deferAt`) n'est pas supporté quand `content` est un `ChatMessage`.
+
+Exemple Discord (embeds) :
+
+```php
+use Symfony\Component\Notifier\Message\ChatMessage;
+use Symfony\Component\Notifier\Bridge\Discord\DiscordOptions;
+use Symfony\Component\Notifier\Bridge\Discord\Embeds\DiscordEmbed;
+
+$chat = new ChatMessage('');
+$chat->options(
+    (new DiscordOptions())
+        ->addEmbed(
+            (new DiscordEmbed())
+                ->title('Build OK')
+                ->description('La CI est verte')
+        )
+);
+
+// Le transport réel est fourni par le bridge symfony/discord-notifier et le DSN DISCORD_DSN.
+$facade->notifyChat('discord', $chat);
+```
+
 ### Navigateur (Mercure)
 ```php
 $facade->notifyBrowser('users:42', [
@@ -169,11 +198,42 @@ export default class extends Controller {
 }
 ```
 
-## Commande CLI
+## Commandes CLI
+
+### Configuration du bundle : `wrap:notificator:config`
+
+Cette commande affiche toute la configuration du bundle WrapNotificator.
+
+```bash
+# Affichage complet avec formatage
+php bin/console wrap:notificator:config
+
+# Format JSON uniquement (pour scripts)
+php bin/console wrap:notificator:config --json
+
+# Section spécifique
+php bin/console wrap:notificator:config --section=mercure
+php bin/console wrap:notificator:config --section=ui
+php bin/console wrap:notificator:config --section=logging
+php bin/console wrap:notificator:config --section=live_flash
+```
+
+**Informations affichées :**
+- **Mercure** : enabled, public_url, topics, auto_inject, turbo_enabled, etc.
+- **UI** : renderer (auto/izitoast/bootstrap), force_theme, toast_theme, CSS, etc.
+- **Logging** : enabled
+- **Live Flash** : enabled, consume, group_messages, topic_prefix
+
+**Utile pour :**
+- Vérifier quel renderer est utilisé (iziToast ou Bootstrap 5)
+- Déboguer la configuration du bundle
+- Exporter la configuration en JSON pour documentation
+
+### Envoi de notifications : `notify:send`
 
 Vous pouvez envoyer des notifications via la console. Cette commande est utile pour les scripts ou les tâches planifiées.
 
-### Exemples par canal
+#### Exemples par canal
 
 ```bash
 # Email

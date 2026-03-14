@@ -203,12 +203,49 @@ class NotifierFacade
      * @param array<string,mixed> $opts
      * @param array<string,mixed> $metadata
      */
-    public function notifyChat(string $transport, string $content, ?string $subject = null, array $opts = [], array $metadata = [], ?DeliveryContext $ctx = null): DeliveryStatus
+    public function notifyChat(string $transport, mixed $content, ?string $subject = null, array $opts = [], array $metadata = [], ?DeliveryContext $ctx = null): DeliveryStatus
     {
         try {
             if ($hit = $this->checkDedupe('chat', $ctx, $metadata)) {
                 return $hit;
             }
+
+            if ($content instanceof ChatMessage) {
+                // Deferred scheduling is not supported for complex ChatMessage payloads
+                if ($ctx?->deferAt instanceof \DateTimeImmutable) {
+                    return $this->finalize(
+                        DeliveryStatus::failed('chat', 'Deferred chat is not supported when content is a ChatMessage', null, $metadata),
+                        [],
+                        $ctx
+                    );
+                }
+
+                // Forced transport (async/sync)
+                if ($ctx?->viaTransport !== null) {
+                    if ($fail = $this->requireBusOrFail('chat', $metadata, $ctx, 'Forcing transport requires Messenger. MessageBus not available.')) {
+                        return $fail;
+                    }
+
+                    return $this->forcedTransportCommon('chat', $metadata, $ctx, function () use ($content, $transport, $subject) {
+                        $msg = clone $content;
+                        $msg->transport($transport);
+                        if ($subject !== null) {
+                            $msg->subject($subject);
+                        }
+                        return $msg;
+                    });
+                }
+
+                // Direct send
+                $content->transport($transport);
+                if ($subject !== null) {
+                    $content->subject($subject);
+                }
+                $status = $this->sender->sendChat($content);
+                return $this->finalize($status, $metadata, $ctx);
+            }
+
+            $content = $this->normalizeChatContent($content);
 
             // Deferred scheduling
             if ($ctx?->deferAt instanceof \DateTimeImmutable) {
@@ -239,6 +276,26 @@ class NotifierFacade
         } catch (\Throwable $e) {
             return $this->finalize(DeliveryStatus::failed('chat', $e->getMessage(), null, $metadata), [], $ctx);
         }
+    }
+
+    private function normalizeChatContent(mixed $content): string
+    {
+        if (is_string($content)) {
+            return $content;
+        }
+        if ($content instanceof \Stringable) {
+            return (string) $content;
+        }
+        if (is_int($content) || is_float($content) || is_bool($content) || $content === null) {
+            return (string) $content;
+        }
+        if (is_array($content) || is_object($content)) {
+            $json = json_encode($content, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            if ($json !== false) {
+                return $json;
+            }
+        }
+        return '';
     }
 
     /**

@@ -13,6 +13,56 @@ composer require xorgxx/wrap-notificator-bundle
 composer require symfony/mailer symfony/notifier symfony/mercure-bundle minishlink/web-push
 ```
 
+## Notifier : installation des bridges (Slack, Telegram, Discord, ...)
+
+Le canal **Chat** du bundle repose sur **Symfony Notifier**.
+
+- Le bundle construit un `ChatMessage` et le transmet à `ChatterInterface`.
+- Le transport réel (Slack, Telegram, Discord, etc.) est fourni par un **bridge Symfony** installé dans votre projet.
+- Une fois le bridge installé et un DSN configuré, `notifyChat()` utilise simplement `transport` (ex: `slack`, `telegram`, `discord`) et Symfony se charge du reste.
+
+### Slack
+
+```bash
+composer require symfony/slack-notifier
+```
+
+Exemple `.env` :
+
+```env
+SLACK_DSN=slack://xoxb-***@default?channel=my-channel
+```
+
+### Telegram
+
+```bash
+composer require symfony/telegram-notifier
+```
+
+Exemple `.env` :
+
+```env
+TELEGRAM_DSN=telegram://bot-token@default?channel=@my_channel
+```
+
+### Discord
+
+```bash
+composer require symfony/discord-notifier
+```
+
+Exemple `.env` (webhook) :
+
+```env
+DISCORD_DSN=discord://TOKEN@default?webhook_id=ID
+```
+
+Exemple `.env` (bot) :
+
+```env
+DISCORD_DSN=discord+bot://BOT_TOKEN@default
+```
+
 Si l’auto‑découverte n’est pas active :
 
 ```php

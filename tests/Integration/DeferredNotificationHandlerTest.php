@@ -85,4 +85,29 @@ final class DeferredNotificationHandlerTest extends TestCase
         ($handler)($msg);
         self::assertTrue(true);
     }
+
+    #[Test]
+    public function handle_chat_normalizes_non_string_content_payload(): void
+    {
+        $factory = new MessageFactory();
+        $sender = $this->createMock(\Neox\WrapNotificatorBundle\Contract\SenderInterface::class);
+
+        $sender->expects(self::once())
+            ->method('sendChat')
+            ->with(self::isInstanceOf(ChatMessage::class))
+            ->willReturn(\Neox\WrapNotificatorBundle\Notification\DeliveryStatus::sent('chat'));
+
+        $handler = new DeferredNotificationHandler($factory, $sender);
+
+        $payload = [
+            'transport' => 'test',
+            'content' => ['type' => 'embed', 'title' => 'Hello'],
+            'subject' => null,
+            'opts' => [],
+        ];
+        $msg = new DeferredNotification('chat', $payload, [], []);
+
+        ($handler)($msg);
+        self::assertTrue(true);
+    }
 }

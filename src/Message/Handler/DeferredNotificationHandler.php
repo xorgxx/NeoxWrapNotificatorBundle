@@ -34,7 +34,12 @@ final class DeferredNotificationHandler
                 $this->sender->sendSms($sms);
                 break;
             case 'chat':
-                $chat = $this->factory->chat((string)$p['transport'], (string)$p['content'], $p['subject'] !== null ? (string)$p['subject'] : null, (array)($p['opts'] ?? []));
+                $rawContent = $p['content'] ?? '';
+                if (!is_string($rawContent)) {
+                    $json = json_encode($rawContent, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                    $rawContent = $json !== false ? $json : '';
+                }
+                $chat = $this->factory->chat((string)$p['transport'], $rawContent, $p['subject'] !== null ? (string)$p['subject'] : null, (array)($p['opts'] ?? []));
                 $this->sender->sendChat($chat);
                 break;
             case 'browser':

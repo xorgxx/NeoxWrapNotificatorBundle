@@ -58,6 +58,35 @@ $facade->notifyChat('slack', 'Deployment finished ✅', 'Release 1.2.3', ['chann
 $facade->notifyChat('telegram', '<b>Alert</b> Slow service', null, ['chatId' => 123456, 'parseMode' => 'HTML']);
 ```
 
+#### Chat: non-string payloads and advanced transports (Discord, ...)
+
+`notifyChat()` also accepts non-string payloads for `content` (array/object/Stringable): they are normalized to a string (JSON when applicable).
+
+For advanced transports like **Discord** (embeds/options), it is recommended to build a `ChatMessage` yourself and pass it as `content`.
+
+**Note:** deferred scheduling (`DeliveryContext::deferAt`) is not supported when `content` is a `ChatMessage`.
+
+Discord example (embeds):
+
+```php
+use Symfony\Component\Notifier\Message\ChatMessage;
+use Symfony\Component\Notifier\Bridge\Discord\DiscordOptions;
+use Symfony\Component\Notifier\Bridge\Discord\Embeds\DiscordEmbed;
+
+$chat = new ChatMessage('');
+$chat->options(
+    (new DiscordOptions())
+        ->addEmbed(
+            (new DiscordEmbed())
+                ->title('Build OK')
+                ->description('CI is green')
+        )
+);
+
+// The actual transport is provided by symfony/discord-notifier and the DISCORD_DSN.
+$facade->notifyChat('discord', $chat);
+```
+
 ### Browser (Mercure)
 ```php
 $facade->notifyBrowser('users:42', [
@@ -169,11 +198,42 @@ export default class extends Controller {
 }
 ```
 
-## CLI Command
+## CLI Commands
+
+### Bundle Configuration: `wrap:notificator:config`
+
+This command displays all WrapNotificator bundle configuration.
+
+```bash
+# Full display with formatting
+php bin/console wrap:notificator:config
+
+# JSON format only (for scripts)
+php bin/console wrap:notificator:config --json
+
+# Specific section
+php bin/console wrap:notificator:config --section=mercure
+php bin/console wrap:notificator:config --section=ui
+php bin/console wrap:notificator:config --section=logging
+php bin/console wrap:notificator:config --section=live_flash
+```
+
+**Information displayed:**
+- **Mercure**: enabled, public_url, topics, auto_inject, turbo_enabled, etc.
+- **UI**: renderer (auto/izitoast/bootstrap), force_theme, toast_theme, CSS, etc.
+- **Logging**: enabled
+- **Live Flash**: enabled, consume, group_messages, topic_prefix
+
+**Useful for:**
+- Checking which renderer is being used (iziToast or Bootstrap 5)
+- Debugging bundle configuration
+- Exporting configuration as JSON for documentation
+
+### Sending Notifications: `notify:send`
 
 You can send notifications via the console. This command is useful for scripts or scheduled tasks.
 
-### Examples by channel
+#### Examples by channel
 
 ```bash
 # Email

@@ -81,3 +81,8 @@ services:
             $hub: '@?mercure.hub.default'
             $bus: '@?messenger.bus.default'
         tags: ['console.command']
+
+    Neox\WrapNotificatorBundle\Command\ConfigShowCommand:
+        arguments:
+            $config: '%wrap_notificator%'
+        tags: ['console.command']

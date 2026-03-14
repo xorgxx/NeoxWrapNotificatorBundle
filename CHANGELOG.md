@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- EN — Added CLI command `wrap:notificator:config`:
+    - Displays all WrapNotificator bundle configuration (Mercure, UI, logging, live_flash).
+    - Supports `--json` flag for machine-readable output.
+    - Supports `--section` option to filter specific configuration sections (mercure, ui, logging, live_flash).
+    - Shows renderer mode (auto/izitoast/bootstrap) with visual indicators and explanations.
+    - Useful for debugging and verifying bundle configuration.
+
+- EN — Chat channel improvements:
+    - `NotifierFacade::notifyChat()` now accepts `mixed $content` (string|array|object|Stringable) and normalizes non-string payloads to a string (JSON when applicable).
+    - `NotifierFacade::notifyChat()` now also supports passing a pre-built `Symfony\\Component\\Notifier\\Message\\ChatMessage` as `content` (recommended for advanced transports such as Discord embeds/options).
+    - Deferred scheduling (`DeliveryContext::deferAt`) is intentionally not supported when `content` is a `ChatMessage` (complex payloads are not serialized).
+    - Deferred chat handler now safely normalizes non-string queued payloads.
+
+- FR — Ajout de la commande CLI `wrap:notificator:config` :
+    - Affiche toute la configuration du bundle WrapNotificator (Mercure, UI, logging, live_flash).
+    - Supporte le flag `--json` pour une sortie lisible par machine.
+    - Supporte l'option `--section` pour filtrer des sections spécifiques (mercure, ui, logging, live_flash).
+    - Affiche le mode de rendu (auto/izitoast/bootstrap) avec indicateurs visuels et explications.
+    - Utile pour le débogage et la vérification de la configuration du bundle.
+
+- FR — Améliorations du canal Chat :
+    - `NotifierFacade::notifyChat()` accepte désormais `mixed $content` (string|array|object|Stringable) et normalise les payloads non-string en string (JSON si pertinent).
+    - `NotifierFacade::notifyChat()` supporte aussi le passage d'un `Symfony\\Component\\Notifier\\Message\\ChatMessage` déjà construit en tant que `content` (recommandé pour les transports avancés comme Discord avec embeds/options).
+    - L'envoi différé (`DeliveryContext::deferAt`) n'est volontairement pas supporté lorsque `content` est un `ChatMessage` (payload complexe non sérialisé).
+    - Le handler d'envoi différé pour chat normalise désormais les payloads non-string.
+
 ## [1.4.0] - 2026-02-07
 - EN — Added Live Flash feature:
     - New attribute `#[LiveFlash]` to enable/disable live flash publishing per controller/method.

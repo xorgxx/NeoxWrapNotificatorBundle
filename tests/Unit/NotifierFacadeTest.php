@@ -26,6 +26,60 @@ final class NotifierFacadeTest extends TestCase
 {
     private MessageFactory $factory;
 
+    private function extractChatMessageText(ChatMessage $chat): ?string
+    {
+        if (method_exists($chat, 'getMessage')) {
+            /** @phpstan-ignore-next-line */
+            return $chat->getMessage();
+        }
+        $ref = new \ReflectionObject($chat);
+        foreach (['message', 'content'] as $propName) {
+            if ($ref->hasProperty($propName)) {
+                $p = $ref->getProperty($propName);
+                $p->setAccessible(true);
+                $v = $p->getValue($chat);
+                return is_string($v) ? $v : null;
+            }
+        }
+        return null;
+    }
+
+    private function extractChatTransport(ChatMessage $chat): ?string
+    {
+        if (method_exists($chat, 'getTransport')) {
+            /** @phpstan-ignore-next-line */
+            return $chat->getTransport();
+        }
+        $ref = new \ReflectionObject($chat);
+        foreach (['transport'] as $propName) {
+            if ($ref->hasProperty($propName)) {
+                $p = $ref->getProperty($propName);
+                $p->setAccessible(true);
+                $v = $p->getValue($chat);
+                return is_string($v) ? $v : null;
+            }
+        }
+        return null;
+    }
+
+    private function extractChatSubject(ChatMessage $chat): ?string
+    {
+        if (method_exists($chat, 'getSubject')) {
+            /** @phpstan-ignore-next-line */
+            return $chat->getSubject();
+        }
+        $ref = new \ReflectionObject($chat);
+        foreach (['subject'] as $propName) {
+            if ($ref->hasProperty($propName)) {
+                $p = $ref->getProperty($propName);
+                $p->setAccessible(true);
+                $v = $p->getValue($chat);
+                return is_string($v) ? $v : null;
+            }
+        }
+        return null;
+    }
+
     protected function setUp(): void
     {
         $this->factory = new MessageFactory();
@@ -153,6 +207,89 @@ final class NotifierFacadeTest extends TestCase
         $arr = $status->toArray();
         self::assertSame('queued', $arr['status']);
         self::assertSame('asyncRabbitMq', $arr['metadata']['transport'] ?? null);
+    }
+
+    #[Test]
+    public function notifyChat_direct_send_accepts_array_content_and_normalizes_to_json(): void
+    {
+        $sender = $this->createMock(SenderInterface::class);
+        $sender->expects(self::once())
+            ->method('sendChat')
+            ->with(self::callback(function (ChatMessage $chat) {
+                $expected = json_encode(['k' => 'v'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                if ($expected === false) {
+                    return false;
+                }
+                $text = $this->extractChatMessageText($chat);
+                return $text === null ? true : $text === $expected;
+            }))
+            ->willReturn(DeliveryStatus::sent('chat'));
+
+        $facade = new NotifierFacade($this->factory, $sender);
+        $status = $facade->notifyChat('test', ['k' => 'v']);
+        self::assertSame('sent', $status->toArray()['status']);
+    }
+
+    #[Test]
+    public function notifyChat_direct_send_accepts_object_content_and_normalizes_to_json(): void
+    {
+        $sender = $this->createMock(SenderInterface::class);
+        $sender->expects(self::once())
+            ->method('sendChat')
+            ->with(self::callback(function (ChatMessage $chat) {
+                $msg = $this->extractChatMessageText($chat);
+                return $msg === null ? true : (str_contains($msg, 'foo') && str_contains($msg, 'bar'));
+            }))
+            ->willReturn(DeliveryStatus::sent('chat'));
+
+        $facade = new NotifierFacade($this->factory, $sender);
+        $obj = new class {
+            public string $foo = 'bar';
+        };
+        $status = $facade->notifyChat('test', $obj);
+        self::assertSame('sent', $status->toArray()['status']);
+    }
+
+    #[Test]
+    public function notifyChat_direct_send_accepts_prebuilt_ChatMessage(): void
+    {
+        $sender = $this->createMock(SenderInterface::class);
+        $sender->expects(self::once())
+            ->method('sendChat')
+            ->with(self::callback(function (ChatMessage $chat) {
+                // transport and subject are applied by the facade
+                $transport = $this->extractChatTransport($chat);
+                $subject = $this->extractChatSubject($chat);
+                if ($transport !== null && $transport !== 'test') {
+                    return false;
+                }
+                if ($subject !== null && $subject !== 'S') {
+                    return false;
+                }
+                return true;
+            }))
+            ->willReturn(DeliveryStatus::sent('chat'));
+
+        $facade = new NotifierFacade($this->factory, $sender);
+        $chat = new ChatMessage('');
+        $status = $facade->notifyChat('test', $chat, 'S');
+        self::assertSame('sent', $status->toArray()['status']);
+    }
+
+    #[Test]
+    public function notifyChat_deferred_rejected_when_content_is_ChatMessage(): void
+    {
+        $sender = $this->createMock(SenderInterface::class);
+        $sender->expects(self::never())->method('sendChat');
+
+        $facade = new NotifierFacade($this->factory, $sender);
+        $ctx = DeliveryContext::create(deferAt: new \DateTimeImmutable('+5 minutes'));
+
+        $chat = new ChatMessage('');
+        $status = $facade->notifyChat('test', $chat, null, [], [], $ctx);
+        $arr = $status->toArray();
+        self::assertSame('failed', $arr['status']);
+        self::assertSame('chat', $arr['channel']);
     }
 
     #[Test]

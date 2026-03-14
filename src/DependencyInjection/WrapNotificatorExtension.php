@@ -17,6 +17,9 @@ final class WrapNotificatorExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
+        // Expose full config array for CLI commands
+        $container->setParameter('wrap_notificator', $config);
+        
         // Extract filters priority map from configuration and expose it as a parameter
         foreach ($config as $key => $value) {
             $container->setParameter('wrap_notificator.'.$key, $value);
