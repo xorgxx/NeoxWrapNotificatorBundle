@@ -1,0 +1,56 @@
+# Traductions pour les formulaires de notification
+# Domaine : messages (par defaut)
+
+# Champs communs
+contact.form.sender: Expediteur
+contact.form.recipient: Destinataire
+contact.form.subject: Sujet
+contact.form.content: Message
+contact.form.transport: Transport
+contact.form.options: Options
+contact.form.data: Donnees
+contact.form.isHtml: Format HTML
+contact.form.template: Template
+contact.form.templateVars: Variables du template
+contact.form.attachments: Pieces jointes
+
+# Champs pour notifications navigateur/push
+contact.form.title: Titre
+contact.form.body: Corps du message
+contact.form.url: URL
+contact.form.icon: Icone
+contact.form.badge: Badge
+contact.form.image: Image
+contact.form.vibrate: Vibration
+contact.form.sound: Son
+contact.form.actions: Actions
+contact.form.tag: Tag
+contact.form.renotify: Re-notifier
+contact.form.requireInteraction: Interaction requise
+contact.form.silent: Silencieux
+
+# Placeholders
+contact.placeholder.sender: votre@email.fr
+contact.placeholder.recipient: exemple@domaine.fr ou +33 6 12 34 56 78
+contact.placeholder.subject: Entrez le sujet
+contact.placeholder.content: Entrez votre message
+contact.placeholder.transport: slack, telegram, etc.
+contact.placeholder.data: Donnees additionnelles (JSON)
+contact.placeholder.title: Titre de la notification
+contact.placeholder.body: Contenu de la notification
+contact.placeholder.url: https://exemple.fr
+contact.placeholder.icon: /images/icon.png
+contact.placeholder.badge: /images/badge.png
+contact.placeholder.image: /images/image.png
+contact.placeholder.tag: notification-tag
+contact.placeholder.options: Options additionnelles (JSON)
+contact.placeholder.templateVars: Variables (JSON)
+contact.placeholder.attachments: Selectionnez des fichiers
+
+# Bouton
+contact.form.send: Envoyer
+
+# Toast / Flash messages
+wrap_notificator.form.sent: "Merci ! Votre message a bien été envoyé."
+wrap_notificator.form.queued: "Merci ! Votre message a été pris en charge et sera envoyé dans quelques instants."
+wrap_notificator.form.failed: "Oups… impossible d'envoyer votre message pour le moment. Veuillez réessayer."

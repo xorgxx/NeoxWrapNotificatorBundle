@@ -1,0 +1,87 @@
+{#
+    Macro Twig pour generer des boutons qui ouvrent la modale Stimulus
+    
+    Utilisation :
+    {% import '@WrapNotificator/widget/modal_button.html.twig' as modal %}
+    
+    {{ modal.button('email', 'Envoyer Email', 'btn btn-primary') }}
+    {{ modal.button('sms', 'Envoyer SMS', 'btn btn-success') }}
+#}
+
+{% macro button(type, text, class, title, exclude, attached, icon_class, icon_only) %}
+    {# Support both positional and named (hash) parameters #}
+    {% if type is iterable and type.type is defined %}
+        {% set params = type %}
+        {% set type = params.type|default('email') %}
+        {% set text = params.text|default(null) %}
+        {% set class = params.class|default(null) %}
+        {% set title = params.title|default(null) %}
+        {% set exclude = params.exclude|default(null) %}
+        {% set attached = params.attached|default(false) %}
+        {% set icon_class = params.icon_class|default(null) %}
+        {% set icon_only = params.icon_only|default(false) %}
+    {% endif %}
+    
+    {% set buttonClass = class|default('btn btn-primary') %}
+    {% set buttonText = text|default('Notification') %}
+    {% set modalTitle = title|default(buttonText) %}
+    {% set defaultExclude = type == 'email' ? 'recipient,template,templateVars,isHtml' : '' %}
+    {% set excludeFields = exclude is defined and exclude is not null ? exclude : defaultExclude %}
+
+    {% set hasIcon = icon_class is defined and icon_class is not null and icon_class != '' %}
+    {% if icon_only is not defined or icon_only is null %}
+        {% set icon_only = hasIcon %}
+    {% endif %}
+
+    {% if hasIcon %}
+        {% set buttonClass = buttonClass ~ ' d-inline-flex align-items-center justify-content-center' %}
+    {% endif %}
+
+    {% if hasIcon and icon_only %}
+        {% set buttonClass = buttonClass ~ '' %}
+    {% endif %}
+    
+    {# Add attachments to exclude list if attached is false or not set for email #}
+    {% if type == 'email' and (attached is not defined or attached == false) %}
+        {% set excludeFields = excludeFields ~ (excludeFields ? ',attachments' : 'attachments') %}
+    {% endif %}
+    
+    <button 
+        type="button" 
+        class="{{ buttonClass }}"
+        {% if hasIcon %}aria-label="{{ buttonText }}"{% endif %}
+        onclick="document.dispatchEvent(new CustomEvent('notify-modal:open', {
+            detail: {
+                url: '{{ path('wrap_notificator_form', {type: type, exclude: excludeFields}) }}',
+                title: '{{ modalTitle }}'
+            }
+        }))"
+    >
+        {% if hasIcon %}
+            <i class="{{ icon_class }} d-block lh-1"></i>
+        {% endif %}
+        {% if not hasIcon %}
+            {{ buttonText }}
+        {% endif %}
+    </button>
+{% endmacro %}
+
+{% macro custom_button(url, text, class, title, exclude) %}
+    {% set buttonClass = class|default('btn btn-primary') %}
+    {% set buttonText = text|default('Ouvrir') %}
+    {% set modalTitle = title|default(buttonText) %}
+    {% set excludeFields = exclude|default('') %}
+    
+    <button 
+        type="button" 
+        class="{{ buttonClass }}"
+        onclick="document.dispatchEvent(new CustomEvent('notify-modal:open', {
+            detail: {
+                url: '{{ url }}{% if excludeFields %}?exclude={{ excludeFields }}{% endif %}',
+                title: '{{ modalTitle }}'
+            }
+        }))"
+    >
+        {{ buttonText }}
+    </button>
+{% endmacro %}

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouveau message de contact</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f7;
+            color: #1d1d1f;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 32px 24px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 8px 0 0;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+        }
+        .content {
+            padding: 32px 24px;
+        }
+        .info-section {
+            margin-bottom: 24px;
+        }
+        .info-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #86868b;
+            margin-bottom: 8px;
+        }
+        .info-value {
+            font-size: 16px;
+            color: #1d1d1f;
+            padding: 12px 16px;
+            background-color: #f5f5f7;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+        .info-value.email {
+            color: #667eea;
+            font-weight: 500;
+        }
+        .message-box {
+            background-color: #f5f5f7;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 8px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .attachments {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e5e7;
+        }
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: #f5f5f7;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .attachment-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        .attachment-info {
+            flex: 1;
+        }
+        .attachment-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1d1d1f;
+        }
+        .attachment-size {
+            font-size: 12px;
+            color: #86868b;
+            margin-top: 2px;
+        }
+        .metadata {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e5e7;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .metadata-item {
+            flex: 1;
+            min-width: 150px;
+        }
+        .metadata-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #86868b;
+            margin-bottom: 4px;
+        }
+        .metadata-value {
+            font-size: 13px;
+            color: #1d1d1f;
+        }
+        .footer {
+            background-color: #f5f5f7;
+            padding: 24px;
+            text-align: center;
+            font-size: 12px;
+            color: #86868b;
+        }
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                border-radius: 0;
+            }
+            .content {
+                padding: 24px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>📬 Nouveau message de contact</h1>
+            <p>Vous avez reçu un nouveau message depuis votre formulaire de contact</p>
+        </div>
+        
+        <div class="content">
+            <div class="info-section">
+                <div class="info-label">Expéditeur</div>
+                <div class="info-value email">{{ sender }}</div>
+            </div>
+            
+            <div class="info-section">
+                <div class="info-label">Sujet</div>
+                <div class="info-value">{{ subject }}</div>
+            </div>
+            
+            <div class="info-section">
+                <div class="info-label">Message</div>
+                <div class="message-box">{{ content }}</div>
+            </div>
+            
+            {% if attachments is defined and attachments|length > 0 %}
+            <div class="attachments">
+                <div class="info-label">Pièces jointes ({{ attachments|length }})</div>
+                {% for attachment in attachments %}
+                <div class="attachment-item">
+                    <div class="attachment-icon">📎</div>
+                    <div class="attachment-info">
+                        <div class="attachment-name">{{ attachment.name }}</div>
+                        <div class="attachment-size">{{ attachment.mime }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <div class="metadata">
+                <div class="metadata-item">
+                    <div class="metadata-label">Date de réception</div>
+                    <div class="metadata-value">{{ receivedAt|date('d/m/Y') }}</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-label">Heure</div>
+                    <div class="metadata-value">{{ receivedAt|date('H:i:s') }}</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-label">IP Client</div>
+                    <div class="metadata-value">{{ clientIp|default('Non disponible') }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Ce message a été envoyé automatiquement depuis votre formulaire de contact.</p>
+            <p>Pour répondre, utilisez l'adresse email de l'expéditeur ci-dessus.</p>
+        </div>
+    </div>
+</body>
+</html>

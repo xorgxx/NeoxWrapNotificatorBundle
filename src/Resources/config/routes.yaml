@@ -1,0 +1,8 @@
+# Routes for WrapNotificatorBundle controllers
+
+wrap_notificator_form:
+    path: /wrap-notificator/form/{type}
+    controller: Neox\WrapNotificatorBundle\Controller\NotificationWidgetController::renderForm
+    methods: [GET, POST]
+    requirements:
+        type: email|sms|chat|browser|push

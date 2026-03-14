@@ -1,0 +1,56 @@
+# Translations for notification forms
+# Domain: messages (default)
+
+# Common fields
+contact.form.sender: Sender
+contact.form.recipient: Recipient
+contact.form.subject: Subject
+contact.form.content: Message
+contact.form.transport: Transport
+contact.form.options: Options
+contact.form.data: Data
+contact.form.isHtml: HTML Format
+contact.form.template: Template
+contact.form.templateVars: Template Variables
+contact.form.attachments: Attachments
+
+# Browser/Push notification fields
+contact.form.title: Title
+contact.form.body: Body
+contact.form.url: URL
+contact.form.icon: Icon
+contact.form.badge: Badge
+contact.form.image: Image
+contact.form.vibrate: Vibrate
+contact.form.sound: Sound
+contact.form.actions: Actions
+contact.form.tag: Tag
+contact.form.renotify: Renotify
+contact.form.requireInteraction: Require Interaction
+contact.form.silent: Silent
+
+# Placeholders
+contact.placeholder.sender: your@email.com
+contact.placeholder.recipient: example@domain.com or +1 234 567 8900
+contact.placeholder.subject: Enter subject
+contact.placeholder.content: Enter your message
+contact.placeholder.transport: slack, telegram, etc.
+contact.placeholder.data: Additional data (JSON)
+contact.placeholder.title: Notification title
+contact.placeholder.body: Notification content
+contact.placeholder.url: https://example.com
+contact.placeholder.icon: /images/icon.png
+contact.placeholder.badge: /images/badge.png
+contact.placeholder.image: /images/image.png
+contact.placeholder.tag: notification-tag
+contact.placeholder.options: Additional options (JSON)
+contact.placeholder.templateVars: Variables (JSON)
+contact.placeholder.attachments: Select files
+
+# Button
+contact.form.send: Send
+
+# Toast / Flash messages
+wrap_notificator.form.sent: "Thanks! Your message has been sent — we’ll reply as soon as possible."
+wrap_notificator.form.queued: "Thanks! Your message has been received and will be sent shortly."
+wrap_notificator.form.failed: "Oops… we couldn't send your message right now. Please try again."
