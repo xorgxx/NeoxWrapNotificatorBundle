@@ -53,7 +53,8 @@ final class AttachmentsValidationValidator extends ConstraintValidator
 
             $violations = $this->validator->validate($item, $fileConstraint);
             foreach ($violations as $violation) {
-                $this->context->buildViolation($violation->getMessage())
+                $this->context
+                    ->buildViolation($violation->getMessageTemplate(), $violation->getParameters())
                     ->addViolation();
             }
         }

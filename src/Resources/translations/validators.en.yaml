@@ -1,0 +1,4 @@
+wrap_notificator:
+  attachments:
+    too_many_files: 'Too many attachments.'
+    invalid_file: 'Invalid attachment.'

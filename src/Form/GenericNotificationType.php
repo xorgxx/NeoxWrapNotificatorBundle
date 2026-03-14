@@ -100,6 +100,8 @@ final class GenericNotificationType extends AbstractType
         if ($recaptchaType && !in_array('captcha', $excludeFields, true)) {
             $builder->add('captcha', $recaptchaType, [
                 'mapped' => false,
+                'label' => false,
+                'required' => false,
                 'constraints' => [new Recaptcha3()],
                 'action_name' => 'wrap_notificator_form',
             ]);

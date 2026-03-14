@@ -9,9 +9,9 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 final class AttachmentsValidation extends Constraint
 {
-    public string $tooManyFilesMessage = 'Too many attachments.';
+    public string $tooManyFilesMessage = 'wrap_notificator.attachments.too_many_files';
 
-    public string $invalidFileMessage = 'Invalid attachment.';
+    public string $invalidFileMessage = 'wrap_notificator.attachments.invalid_file';
 
     public function getTargets(): string
     {
