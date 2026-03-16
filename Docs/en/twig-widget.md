@@ -86,6 +86,39 @@ wrap_notificator:
       - 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 ```
 
+### Optional: Anti-spam (honeypot + rate limiting)
+
+The widget includes server-side anti-spam protections:
+
+- A **honeypot** field `fax` is added to the form (unmapped).
+- If `fax` is filled, the submission is silently blocked (no email is sent).
+
+**Important**: the `fax` field is hidden by default (hidden input). You can still add CSS if you want an extra layer on the rendering side.
+
+```css
+.wrap-notificator-hp {
+  display: none;
+}
+```
+
+#### Optional IP rate limiting
+
+If you configure a Symfony Rate Limiter named `wrap_notificator_form_ip`, it will be consumed on submit.
+
+When the limit is exceeded, the controller adds a dedicated **`warning` flash** telling the user the limit has been reached, including a **retry delay** (e.g. “try again in 2 minutes”).
+
+Example:
+
+```yaml
+# config/packages/rate_limiter.yaml
+framework:
+  rate_limiter:
+    wrap_notificator_form_ip:
+      policy: 'fixed_window'
+      limit: 5
+      interval: '10 minutes'
+```
+
 ### Step 3: Use the modal
 
 #### Option A: With Twig macro (recommended)

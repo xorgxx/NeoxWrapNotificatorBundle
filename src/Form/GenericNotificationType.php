@@ -10,6 +10,7 @@ use Karser\Recaptcha3Bundle\Validator\Constraints\Recaptcha3;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -87,6 +88,20 @@ final class GenericNotificationType extends AbstractType
             }
 
             $builder->add($name, $formType, $fieldOptions);
+        }
+
+        if (!in_array('fax', $excludeFields, true)) {
+            $builder->add('fax', HiddenType::class, [
+                'mapped' => false,
+                'required' => false,
+                'label' => false,
+                'translation_domain' => 'messages',
+                'attr' => [
+                    'class' => 'wrap-notificator-hp',
+                    'autocomplete' => 'off',
+                    'tabindex' => '-1',
+                ],
+            ]);
         }
 
         $recaptchaType = null;

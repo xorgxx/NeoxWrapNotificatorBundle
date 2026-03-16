@@ -54,3 +54,7 @@ contact.form.send: Send
 wrap_notificator.form.sent: "Thanks! Your message has been sent — we’ll reply as soon as possible."
 wrap_notificator.form.queued: "Thanks! Your message has been received and will be sent shortly."
 wrap_notificator.form.failed: "Oops… we couldn't send your message right now. Please try again."
+wrap_notificator.form.rate_limited: "You have reached the sending limit. Please try again in %delay%."
+wrap_notificator.form.retry_in_a_moment: "a moment"
+wrap_notificator.form.delay_minutes: "{1} %count% minute|]1,Inf[ %count% minutes"
+wrap_notificator.form.delay_seconds: "{1} %count% second|]1,Inf[ %count% seconds"

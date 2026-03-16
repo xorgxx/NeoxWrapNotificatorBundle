@@ -73,9 +73,32 @@ final class NotificationWidgetController extends AbstractController
         $form->handleRequest($request);
 
         $status = null;
+        $rateLimitedRetryAfterSeconds = null;
         if ($form->isSubmitted() && $form->isValid()) {
+            $hp = $form->has('fax') ? (string) $form->get('fax')->getData() : '';
+            if (trim($hp) !== '') {
+                $status = DeliveryStatus::queued($type, null, 'honeypot', ['reason' => 'honeypot']);
+            }
+
+            if ($status === null && $this->container->has('limiter.wrap_notificator_form_ip')) {
+                $ip = (string) ($request->getClientIp() ?? 'unknown');
+                $limiter = $this->container->get('limiter.wrap_notificator_form_ip');
+                if (is_object($limiter) && method_exists($limiter, 'consume')) {
+                    $limit = $limiter->consume(1, $ip);
+                    if (is_object($limit) && method_exists($limit, 'isAccepted') && $limit->isAccepted() === false) {
+                        if (method_exists($limit, 'getRetryAfter')) {
+                            $retryAfter = $limit->getRetryAfter();
+                            if ($retryAfter instanceof \DateTimeInterface) {
+                                $rateLimitedRetryAfterSeconds = max(1, $retryAfter->getTimestamp() - time());
+                            }
+                        }
+                        $status = DeliveryStatus::queued($type, null, 'rate-limited', ['reason' => 'rate_limiter']);
+                    }
+                }
+            }
+
             // Apply email template for contact forms if enabled
-            if ($dto instanceof EmailNotificationDto && ($this->config['email_template']['enabled'] ?? true)) {
+            if ($status === null && $dto instanceof EmailNotificationDto && ($this->config['email_template']['enabled'] ?? true)) {
                 $dto->template = $this->config['email_template']['template'] ?? '@WrapNotificator/email/contact_form.html.twig';
                 $dto->templateVars = [
                     'sender' => $dto->sender,
@@ -90,10 +113,26 @@ final class NotificationWidgetController extends AbstractController
                 ];
             }
             
-            $status = $this->facade->send($dto);
+            if ($status === null) {
+                $status = $this->facade->send($dto);
+            }
             $flashType = 'info';
             $flashMessage = $this->translator->trans('wrap_notificator.form.queued', ['%type%' => $type], 'messages');
             $closeModal = false;
+
+            if ($status->message === 'rate-limited') {
+                $flashType = 'warning';
+                if ($rateLimitedRetryAfterSeconds === null) {
+                    $delay = $this->translator->trans('wrap_notificator.form.retry_in_a_moment', [], 'messages');
+                } elseif ($rateLimitedRetryAfterSeconds >= 60) {
+                    $minutes = (int) ceil($rateLimitedRetryAfterSeconds / 60);
+                    $delay = $this->translator->trans('wrap_notificator.form.delay_minutes', ['%count%' => $minutes], 'messages');
+                } else {
+                    $seconds = (int) $rateLimitedRetryAfterSeconds;
+                    $delay = $this->translator->trans('wrap_notificator.form.delay_seconds', ['%count%' => $seconds], 'messages');
+                }
+                $flashMessage = $this->translator->trans('wrap_notificator.form.rate_limited', ['%delay%' => $delay], 'messages');
+            }
 
             if ($status->status === DeliveryStatus::STATUS_FAILED) {
                 $flashType = 'error';

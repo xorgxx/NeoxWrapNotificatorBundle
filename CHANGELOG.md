@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- EN — Anti-spam protections for Plug & Play forms:
+   - Added a built-in honeypot field (`fax`) to `GenericNotificationType`.
+   - `NotificationWidgetController` now blocks submissions when the honeypot is filled.
+   - Optional IP rate limiting support: if a Symfony RateLimiter named `wrap_notificator_form_ip` is configured, it is consumed on submit.
+   - When the rate limiter rejects a submission, the controller now adds a dedicated warning flash message including the retry delay.
+
+- FR — Protections anti-spam pour les formulaires Plug & Play :
+   - Ajout d'un champ honeypot (`fax`) dans `GenericNotificationType`.
+   - `NotificationWidgetController` bloque les soumissions si le honeypot est rempli.
+   - Support optionnel d'un rate limiter IP : si un RateLimiter Symfony `wrap_notificator_form_ip` est configuré, il est consommé à la soumission.
+   - Quand la soumission est refusée par le rate limiter, le contrôleur ajoute un flash `warning` dédié incluant le délai avant nouvel essai.
+
+- EN — Email headers:
+   - Email `Reply-To` can now be set via MessageFactory option `replyTo`.
+   - The bundle no longer forces the `From` header in `NotifierFacade` so Symfony Mailer `framework.mailer.headers` / `framework.mailer.envelope.sender` can be used.
+
+- FR — En-têtes email :
+   - `Reply-To` peut maintenant être défini via l'option `replyTo` de `MessageFactory`.
+   - Le bundle ne force plus le `From` dans `NotifierFacade` afin de laisser la config Symfony Mailer (`framework.mailer.headers` / `framework.mailer.envelope.sender`) s'appliquer.
+
 - EN — Email attachments security:
     - Attachment validation is now configurable via `wrap_notificator.attachments_validation`.
     - Introduced a custom Symfony constraint `AttachmentsValidation` used by `EmailNotificationDto::$attachments`.
