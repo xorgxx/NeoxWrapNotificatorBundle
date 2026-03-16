@@ -13,6 +13,9 @@ final class EmailNotificationDto implements NotificationDtoInterface
     #[Assert\Email]
     public string $sender = '';
 
+    #[Assert\Email]
+    public ?string $from = null;
+
     #[Assert\NotBlank]
     #[Assert\Email]
     public string $recipient = '';

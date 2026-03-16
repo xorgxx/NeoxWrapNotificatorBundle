@@ -17,6 +17,7 @@ final class MessageFactory
      * @param array{
      *   html?:bool,
      *   from?:array{0:string,1:string|null},
+     *   replyTo?:array{0:string,1:string|null},
      *   attachments?:array<mixed>,
      *   inline?:array<mixed>
      * } $opts
@@ -30,6 +31,11 @@ final class MessageFactory
         if (isset($opts['from'])) {
             $from = $opts['from'];
             $email = $email->from(new Address($from[0], (string)($from[1] ?? '')));
+        }
+
+        if (isset($opts['replyTo'])) {
+            $replyTo = $opts['replyTo'];
+            $email = $email->replyTo(new Address($replyTo[0], (string)($replyTo[1] ?? '')));
         }
 
         $isHtml = $opts['html'] ?? true;
