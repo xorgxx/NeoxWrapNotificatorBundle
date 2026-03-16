@@ -36,6 +36,16 @@
             color: rgba(255, 255, 255, 0.9);
             font-size: 14px;
         }
+        .site-badge {
+            display: inline-block;
+            margin-left: 6px;
+            padding: 3px 10px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #2d2d33;
+            border-radius: 999px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
         .content {
             padding: 32px 24px;
         }
@@ -156,7 +166,10 @@
         <div class="header">
             <h1>📬 Nouveau message de contact</h1>
             <p>
-                Vous avez reçu un nouveau message depuis votre formulaire de contact {% if siteName is defined and siteName %} (<strong>{{ siteName }}</strong>){% endif %}
+                Vous avez reçu un nouveau message depuis votre formulaire de contact
+                {% if siteName is defined and siteName %}
+                    <span class="site-badge">{{ siteName }}</span>
+                {% endif %}
                 {% if siteUrl is defined and siteUrl %}
                     <br>
                     <a href="{{ siteUrl }}" style="color: rgba(255, 255, 255, 0.95); text-decoration: underline;">{{ siteUrl }}</a>
