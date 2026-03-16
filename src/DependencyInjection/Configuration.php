@@ -80,6 +80,11 @@ final class Configuration implements ConfigurationInterface
             ->end()
         ->end();
 
+        $children
+            ->scalarNode('site_name')
+                ->defaultNull()
+            ->end();
+
         $children->arrayNode('email_template')
             ->addDefaultsIfNotSet()
             ->children()

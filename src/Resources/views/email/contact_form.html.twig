@@ -155,7 +155,13 @@
     <div class="email-container">
         <div class="header">
             <h1>📬 Nouveau message de contact</h1>
-            <p>Vous avez reçu un nouveau message depuis votre formulaire de contact</p>
+            <p>
+                Vous avez reçu un nouveau message depuis votre formulaire de contact <strong>{% if siteName is defined and siteName %} ({{ siteName }}){% endif %}</strong>
+                {% if siteUrl is defined and siteUrl %}
+                    <br>
+                    <a href="{{ siteUrl }}" style="color: rgba(255, 255, 255, 0.95); text-decoration: underline;">{{ siteUrl }}</a>
+                {% endif %}
+            </p>
         </div>
         
         <div class="content">

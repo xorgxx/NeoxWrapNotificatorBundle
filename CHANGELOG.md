@@ -20,9 +20,17 @@ All notable changes to this project will be documented in this file.
    - Email `Reply-To` can now be set via MessageFactory option `replyTo`.
    - The bundle no longer forces the `From` header in `NotifierFacade` so Symfony Mailer `framework.mailer.headers` / `framework.mailer.envelope.sender` can be used.
 
+- EN — Contact email template:
+   - Added `wrap_notificator.site_name` configuration to display a site name in the default contact email template (fallback: Symfony parameter `name_projet` when available, then request host).
+   - The default contact email template now also displays a clickable site link when `siteUrl` is provided (fallback: Symfony parameter `web_site` when available, then request scheme+host).
+
 - FR — En-têtes email :
    - `Reply-To` peut maintenant être défini via l'option `replyTo` de `MessageFactory`.
    - Le bundle ne force plus le `From` dans `NotifierFacade` afin de laisser la config Symfony Mailer (`framework.mailer.headers` / `framework.mailer.envelope.sender`) s'appliquer.
+
+- FR — Template email de contact :
+   - Ajout de la configuration `wrap_notificator.site_name` pour afficher le nom du site dans le template email de contact par défaut (fallback : paramètre Symfony `name_projet` si disponible, puis host de la requête).
+   - Le template email de contact par défaut affiche aussi un lien cliquable vers le site quand `siteUrl` est fourni (fallback : paramètre Symfony `web_site` si disponible, puis scheme+host de la requête).
 
 - EN — Email attachments security:
     - Attachment validation is now configurable via `wrap_notificator.attachments_validation`.

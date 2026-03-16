@@ -12,24 +12,31 @@
         {% endfor %}
     {% endfor %}
 
-    {{ form_start(form, {'action': path('wrap_notificator_form', {'type': type, 'exclude': app.request.query.get('exclude', '')}), 'attr': {'class': 'row g-3', 'enctype': 'multipart/form-data'}}) }}
-        {% for child in form.children %}
-            {% if child.vars.name != 'send' %}
-                <div class="col-12">
-                    {{ form_label(child, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
-                    {{ form_widget(child) }}
-                    {{ form_errors(child, {'attr': {'class': 'text-danger small'}}) }}
+    {% set isRateLimited = type == 'email' and status and status.message == 'rate-limited' %}
+
+    {% if not isRateLimited %}
+        {{ form_start(form, {'action': path('wrap_notificator_form', {'type': type, 'exclude': app.request.query.get('exclude', '')}), 'attr': {'class': 'row g-3', 'enctype': 'multipart/form-data'}}) }}
+            {% for child in form.children %}
+                {% if child.vars.name != 'send' %}
+                    <div class="col-12">
+                        {{ form_label(child, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                        {{ form_widget(child) }}
+                        {{ form_errors(child, {'attr': {'class': 'text-danger small'}}) }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            {% if form.send is defined %}
+                <div class="col-12 mt-4">
+                    {{ form_widget(form.send, {'attr': {'class': 'btn btn-success w-100 fw-bold'}}) }}
                 </div>
             {% endif %}
-        {% endfor %}
-
-        {# Le bouton 'send' est géré à l'extérieur pour la modale, mais on le rend si présent et non exclu #}
-        {% if form.send is defined %}
-            <div class="col-12 mt-4">
-                {{ form_widget(form.send, {'attr': {'class': 'btn btn-success w-100 fw-bold'}}) }}
-            </div>
-        {% endif %}
-    {{ form_end(form) }}
+        {{ form_end(form) }}
+    {% else %}
+        <div class="alert alert-warning" role="alert">
+            {{ 'wrap_notificator.form.rate_limited'|trans({'%delay%': ('wrap_notificator.form.retry_in_a_moment'|trans({}, 'messages'))}, 'messages') }}
+        </div>
+    {% endif %}
 
     {% if status %}
         <div class="mt-3">

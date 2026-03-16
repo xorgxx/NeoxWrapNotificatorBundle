@@ -100,7 +100,36 @@ final class NotificationWidgetController extends AbstractController
             // Apply email template for contact forms if enabled
             if ($status === null && $dto instanceof EmailNotificationDto && ($this->config['email_template']['enabled'] ?? true)) {
                 $dto->template = $this->config['email_template']['template'] ?? '@WrapNotificator/email/contact_form.html.twig';
+                $siteName = $this->config['site_name'] ?? null;
+                if (!is_string($siteName) || trim($siteName) === '') {
+                    try {
+                        $projectName = $this->getParameter('name_projet');
+                        if (is_string($projectName) && trim($projectName) !== '') {
+                            $siteName = $projectName;
+                        }
+                    } catch (\Throwable) {
+                        // ignore
+                    }
+                }
+                if (!is_string($siteName) || trim($siteName) === '') {
+                    $siteName = (string) ($request->getHost() ?? '');
+                }
+
+                $siteUrl = null;
+                try {
+                    $configuredSiteUrl = $this->getParameter('web_site');
+                    if (is_string($configuredSiteUrl) && trim($configuredSiteUrl) !== '') {
+                        $siteUrl = $configuredSiteUrl;
+                    }
+                } catch (\Throwable) {
+                    // ignore
+                }
+                if (!is_string($siteUrl) || trim($siteUrl) === '') {
+                    $siteUrl = $request->getSchemeAndHttpHost();
+                }
                 $dto->templateVars = [
+                    'siteName' => $siteName,
+                    'siteUrl' => $siteUrl,
                     'sender' => $dto->sender,
                     'subject' => $dto->subject,
                     'content' => $dto->content,

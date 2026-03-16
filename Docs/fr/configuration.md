@@ -23,6 +23,8 @@ Créez le fichier `config/packages/wrap_notificator.yaml` :
 
 ```yaml
 wrap_notificator:
+  site_name: 'Mon site'                # Optionnel : nom du site affiché dans le template email de contact
+                                      # Fallbacks : paramètre Symfony `name_projet` (si disponible), puis host de la requête.
   logging:
     enabled: false                    # Activer le logging (par défaut vers les logs Symfony / Monolog)
   live_flash:
@@ -47,6 +49,18 @@ wrap_notificator:
       asset_path: '@WrapNotificator/css/wrap_notificator.css'
       asset_fallback_prefix: '/bundles/wrapnotificator'
 ```
+
+### Variables du template email de contact (par défaut)
+
+Si `wrap_notificator.email_template.enabled: true`, le bundle utilise le template `@WrapNotificator/email/contact_form.html.twig` et fournit notamment :
+
+- **`siteName`** :
+  - `wrap_notificator.site_name` si défini
+  - sinon paramètre Symfony `name_projet` (si présent)
+  - sinon `request.host`
+- **`siteUrl`** (lien affiché dans l'entête) :
+  - paramètre Symfony `web_site` (si présent)
+  - sinon `request.schemeAndHttpHost`
 
 ## Thèmes UI (force_theme vs toast_theme)
 
