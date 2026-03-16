@@ -72,7 +72,6 @@ class NotifierFacade
                 [
                     'template' => $dto->template,
                     'vars' => $dto->templateVars,
-                    'from' => [$dto->from ?? $dto->recipient, ''],
                     'replyTo' => [$dto->sender, ''],
                     'attachments' => $this->convertUploadedFilesToAttachments($dto->attachments)
                 ],
