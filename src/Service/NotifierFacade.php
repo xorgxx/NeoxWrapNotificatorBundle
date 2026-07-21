@@ -48,6 +48,7 @@ class NotifierFacade
         private readonly ?HubInterface $hub = null,
         private readonly array $mercureConfig = [],
         private readonly array $loggingConfig = [],
+        private readonly array $bccConfig = [],
     ) {
     }
 
@@ -122,6 +123,16 @@ class NotifierFacade
             }
             $opts['html'] = $isHtml;
 
+            // Tag detection: [tag] Subject → strip tag, resolve BCC
+            $cleanSubject = $subject;
+            if (preg_match('/\[([a-z]+)\]\s*/i', $subject, $m)) {
+                $tag = strtolower($m[1]);
+                $cleanSubject = preg_replace('/\[([a-z]+)\]\s*/i', '', $subject);
+                if (isset($this->bccConfig[$tag])) {
+                    $opts['bcc'] = array_merge($this->bccConfig[$tag], $opts['bcc'] ?? []);
+                }
+            }
+
             // Template rendering if provided
             $template = $opts['template'] ?? null;
             if (is_string($template) && $template !== '') {
@@ -139,7 +150,7 @@ class NotifierFacade
                     return $fail;
                 }
                 $payload = [
-                    'subject' => $subject,
+                    'subject' => $cleanSubject,
                     'content' => $htmlOrText,
                     'to' => $to,
                     'opts' => $opts,
@@ -153,11 +164,11 @@ class NotifierFacade
                 if ($fail = $this->requireBusOrFail('email', $metadata, $ctx, 'Forcing transport requires Messenger. MessageBus not available.')) {
                     return $fail;
                 }
-                return $this->forcedTransportCommon('email', $metadata, $ctx, fn () => $this->factory->email($subject, $htmlOrText, $to, $opts), true);
+                return $this->forcedTransportCommon('email', $metadata, $ctx, fn () => $this->factory->email($cleanSubject, $htmlOrText, $to, $opts), true);
             }
 
             // Direct send
-            $email = $this->factory->email($subject, $htmlOrText, $to, $opts);
+            $email = $this->factory->email($cleanSubject, $htmlOrText, $to, $opts);
             $status = $this->sender->sendEmail($email);
             return $this->finalize($status, $metadata, $ctx);
         } catch (\Throwable $e) {

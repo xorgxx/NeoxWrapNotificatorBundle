@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- EN — Default email sender & automatic BCC by tag:
+   - `MessageFactory` now accepts `defaultFrom`/`defaultFromName` constructor arguments (wired from `wrap_notificator.default_senders.email`). When no `from` is explicitly passed in `notifyEmail()` opts, the default sender is used automatically. This prevents SMTP `550 5.7.1 Sender mismatch` errors.
+   - New `wrap_notificator.bcc` configuration: a map of tag → email list. When an email subject contains a `[tag]` prefix, the corresponding BCC addresses are automatically added and the tag is stripped from the subject before sending.
+   - `MessageFactory::email()` now supports `bcc` in opts (array or string).
+   - `NotifierFacade` constructor accepts a new `bccConfig` parameter (wired from `wrap_notificator.bcc`).
+
+- FR — Expéditeur email par défaut & BCC automatique par tag :
+   - `MessageFactory` accepte désormais `defaultFrom`/`defaultFromName` en arguments du constructeur (injectés depuis `wrap_notificator.default_senders.email`). Quand aucun `from` n'est explicitement passé dans les opts de `notifyEmail()`, l'expéditeur par défaut est utilisé automatiquement. Cela évite l'erreur SMTP `550 5.7.1 Sender mismatch`.
+   - Nouvelle configuration `wrap_notificator.bcc` : une map tag → liste d'emails. Quand un sujet d'email contient un préfixe `[tag]`, les adresses BCC correspondantes sont automatiquement ajoutées et le tag est supprimé du sujet avant l'envoi.
+   - `MessageFactory::email()` supporte maintenant `bcc` dans les opts (tableau ou string).
+   - Le constructeur de `NotifierFacade` accepte un nouveau paramètre `bccConfig` (injecté depuis `wrap_notificator.bcc`).
+
 - EN — Anti-spam protections for Plug & Play forms:
    - Added a built-in honeypot field (`fax`) to `GenericNotificationType`.
    - `NotificationWidgetController` now blocks submissions when the honeypot is filled.

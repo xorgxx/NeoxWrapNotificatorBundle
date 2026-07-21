@@ -4,7 +4,9 @@ services:
         autoconfigure: true
 
     # Core factory and sender
-    Neox\WrapNotificatorBundle\Notification\MessageFactory: ~
+    Neox\WrapNotificatorBundle\Notification\MessageFactory:
+        arguments:
+            $defaultFrom: '%wrap_notificator.default_senders.email%'
 
     Neox\WrapNotificatorBundle\Notification\TypedSender:
         arguments:
@@ -41,6 +43,7 @@ services:
             $hub: '@?mercure.hub.default'
             $mercureConfig: '%wrap_notificator.mercure%'
             $loggingConfig: '%wrap_notificator.logging%'
+            $bccConfig: '%wrap_notificator.bcc%'
 
     # Controllers
     Neox\WrapNotificatorBundle\Controller\NotificationWidgetController:

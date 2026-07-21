@@ -25,6 +25,13 @@ Créez le fichier `config/packages/wrap_notificator.yaml` :
 wrap_notificator:
   site_name: 'Mon site'                # Optionnel : nom du site affiché dans le template email de contact
                                       # Fallbacks : paramètre Symfony `name_projet` (si disponible), puis host de la requête.
+  default_recipients:
+    email: 'contact@example.com'       # Destinataire par défaut (optionnel)
+  default_senders:
+    email: 'noreply@example.com'       # Expéditeur par défaut (utilisé si aucun `from` n'est passé à notifyEmail)
+  bcc:
+    alert: ['admin@example.com']       # BCC automatique quand le sujet contient [alert]
+    commande: ['orders@example.com']   # BCC automatique quand le sujet contient [commande]
   logging:
     enabled: false                    # Activer le logging (par défaut vers les logs Symfony / Monolog)
   live_flash:
@@ -78,6 +85,44 @@ Si `external_css: true` et `auto_link_css: true`, `wrap_notify_bootstrap()` inje
   - `wrap_notificator.amazon.css`
   - `wrap_notificator.google.css`
   - `wrap_notificator.dark.css`
+
+## Expéditeur par défaut & BCC automatique
+
+### Expéditeur par défaut (`default_senders.email`)
+
+Quand `default_senders.email` est configuré, `MessageFactory` l'utilise automatiquement comme adresse `From` si aucun `from` n'est explicitement passé dans les `opts` de `notifyEmail()`. Cela évite l'erreur SMTP `550 5.7.1 Sender mismatch` quand le serveur SMTP exige que l'expéditeur corresponde au compte authentifié.
+
+### BCC automatique par tag (`bcc`)
+
+Le bundle supporte l'ajout automatique de destinataires en copie cachée (BCC) basé sur un **tag** dans le sujet de l'email.
+
+**Configuration :**
+
+```yaml
+wrap_notificator:
+  bcc:
+    alert: ['admin@example.com', 'manager@example.com']
+    commande: ['orders@example.com']
+```
+
+**Utilisation :** préfixez le sujet avec `[tag]` :
+
+```php
+// Le tag [alert] est détecté, le BCC est appliqué, puis le tag est supprimé du sujet
+$notifier->notifyEmail('[alert] Alertes stock', $html, 'user@example.com');
+// Sujet envoyé : « Alertes stock » (sans le tag)
+// BCC : admin@example.com, manager@example.com
+
+// Le tag [commande] est détecté, le BCC est appliqué, puis le tag est supprimé du sujet
+$notifier->notifyEmail('[commande] Commande validée', $html, 'user@example.com');
+// Sujet envoyé : « Commande validée » (sans le tag)
+// BCC : orders@example.com
+```
+
+- Le tag `[xxx]` est **supprimé** du sujet avant l'envoi — il est invisible pour le destinataire.
+- Si le tag n'a pas d'entrée dans la config `bcc`, aucun BCC n'est ajouté.
+- Si aucun tag n'est présent dans le sujet, le comportement est inchangé.
+- Un tag peut avoir plusieurs adresses BCC.
 
 ## Sécurité & CORS
 

@@ -13,11 +13,18 @@ use Symfony\Component\Notifier\Message\SmsMessage;
 
 final class MessageFactory
 {
+    public function __construct(
+        private readonly ?string $defaultFrom = null,
+        private readonly ?string $defaultFromName = null,
+    ) {
+    }
+
     /**
      * @param array{
      *   html?:bool,
      *   from?:array{0:string,1:string|null},
      *   replyTo?:array{0:string,1:string|null},
+     *   bcc?:array<int,string>|string,
      *   attachments?:array<mixed>,
      *   inline?:array<mixed>
      * } $opts
@@ -31,11 +38,20 @@ final class MessageFactory
         if (isset($opts['from'])) {
             $from = $opts['from'];
             $email = $email->from(new Address($from[0], (string)($from[1] ?? '')));
+        } elseif ($this->defaultFrom !== null) {
+            $email = $email->from(new Address($this->defaultFrom, (string)($this->defaultFromName ?? '')));
         }
 
         if (isset($opts['replyTo'])) {
             $replyTo = $opts['replyTo'];
             $email = $email->replyTo(new Address($replyTo[0], (string)($replyTo[1] ?? '')));
+        }
+
+        if (isset($opts['bcc'])) {
+            $bcc = is_array($opts['bcc']) ? $opts['bcc'] : [$opts['bcc']];
+            foreach ($bcc as $addr) {
+                $email = $email->addBcc($addr);
+            }
         }
 
         $isHtml = $opts['html'] ?? true;

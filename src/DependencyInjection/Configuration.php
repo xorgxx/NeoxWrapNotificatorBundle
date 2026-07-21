@@ -80,6 +80,14 @@ final class Configuration implements ConfigurationInterface
             ->end()
         ->end();
 
+        $children->arrayNode('bcc')
+            ->useAttributeAsKey('tag')
+            ->prototype('array')
+                ->prototype('scalar')->end()
+            ->end()
+            ->defaultValue([])
+        ->end();
+
         $children
             ->scalarNode('site_name')
                 ->defaultNull()
