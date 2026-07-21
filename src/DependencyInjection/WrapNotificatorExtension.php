@@ -20,9 +20,18 @@ final class WrapNotificatorExtension extends Extension
         // Expose full config array for CLI commands
         $container->setParameter('wrap_notificator', $config);
         
-        // Extract filters priority map from configuration and expose it as a parameter
+        // Expose each top-level config key as a parameter
         foreach ($config as $key => $value) {
             $container->setParameter('wrap_notificator.'.$key, $value);
+        }
+
+        // Flatten nested array configs into dot-notation parameters
+        foreach (['default_senders', 'default_recipients'] as $node) {
+            if (is_array($config[$node] ?? null)) {
+                foreach ($config[$node] as $subKey => $subValue) {
+                    $container->setParameter('wrap_notificator.'.$node.'.'.$subKey, $subValue);
+                }
+            }
         }
 
 
