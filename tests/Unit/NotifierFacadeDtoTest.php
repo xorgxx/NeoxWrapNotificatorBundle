@@ -37,7 +37,8 @@ final class NotifierFacadeDtoTest extends TestCase
         $facade = new NotifierFacade($this->factory, $sender);
 
         $dto = new EmailNotificationDto();
-        $dto->to = 'test@example.com';
+        $dto->recipient = 'test@example.com';
+        $dto->sender = 'sender@example.com';
         $dto->subject = 'Hello';
         $dto->content = 'World';
 
@@ -57,7 +58,7 @@ final class NotifierFacadeDtoTest extends TestCase
         $facade = new NotifierFacade($this->factory, $sender);
 
         $dto = new SmsNotificationDto();
-        $dto->to = '+33600000000';
+        $dto->recipient = '+33600000000';
         $dto->content = 'Hello';
 
         $status = $facade->send($dto);

@@ -3,7 +3,7 @@
 [![Tests](https://github.com/xorgxx/WrapNotificatorBundle/actions/workflows/ci.yml/badge.svg)](https://github.com/xorgxx/WrapNotificatorBundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Un bundle Symfony 7.3 / PHP 8.3 pour unifier et simplifier l’envoi de notifications via Mailer, Notifier (SMS/Chat), Mercure (browser) et Web Push, avec une UX front moderne (toasts) et des fonctionnalités avancées (idempotence, corrélation, envoi différé async).
+Un bundle Symfony 7.4 / 8.x / PHP 8.3+ pour unifier et simplifier l’envoi de notifications via Mailer, Notifier (SMS/Chat), Mercure (browser) et Web Push, avec une UX front moderne (toasts) et des fonctionnalités avancées (idempotence, corrélation, envoi différé async).
 
 ---
 

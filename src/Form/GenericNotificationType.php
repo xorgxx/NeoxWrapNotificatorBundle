@@ -112,7 +112,7 @@ final class GenericNotificationType extends AbstractType
             $recaptchaType = \Karser\Recaptcha3Bundle\Form\Type\Recaptcha3Type::class;
         }
 
-        if ($recaptchaType && !in_array('captcha', $excludeFields, true)) {
+        if ($recaptchaType && class_exists(Recaptcha3::class) && !in_array('captcha', $excludeFields, true)) {
             $builder->add('captcha', $recaptchaType, [
                 'mapped' => false,
                 'label' => false,
@@ -134,7 +134,7 @@ final class GenericNotificationType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => null,
-            'csrf_protection' => false,
+            'csrf_protection' => true,
             'exclude_fields' => [],
         ]);
 

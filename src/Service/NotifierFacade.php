@@ -446,6 +446,17 @@ class NotifierFacade
             $status = $status->withContext($ctx);
         }
 
+        // A failed delivery must remain retryable with the same idempotency key.
+        // Successful direct sends and accepted Messenger dispatches are deduplicated.
+        if (
+            $ctx?->dedupeKey !== null
+            && $this->dedupe !== null
+            && $status->status !== DeliveryStatus::STATUS_FAILED
+            && ($status->metadata['reason'] ?? null) !== 'dedup-hit'
+        ) {
+            $this->dedupe->remember($ctx->dedupeKey, $ctx->ttlSeconds ?? 600);
+        }
+
         if (($this->loggingConfig['enabled'] ?? false) && $this->logger !== null) {
             try {
                 $this->logger->log($status);
@@ -528,7 +539,7 @@ class NotifierFacade
     }
 
     /**
-     * Returns DeliveryStatus queued when dedupe hit, otherwise null. Also calls remember() on miss when applicable.
+     * Returns DeliveryStatus queued when dedupe hit, otherwise null.
      * @param array<string,mixed> $metadata
      */
     private function checkDedupe(string $channel, ?DeliveryContext $ctx, array $metadata): ?DeliveryStatus
@@ -540,7 +551,6 @@ class NotifierFacade
             $status = DeliveryStatus::queued($channel, null, 'noop', ['reason' => 'dedup-hit']);
             return $this->finalize($status, $metadata, $ctx);
         }
-        $this->dedupe->remember($ctx->dedupeKey, $ctx->ttlSeconds ?? 600);
         return null;
     }
 }

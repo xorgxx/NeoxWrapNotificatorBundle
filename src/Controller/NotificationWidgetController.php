@@ -14,6 +14,7 @@ use Neox\WrapNotificatorBundle\Notification\Dto\SmsNotificationDto;
 use Neox\WrapNotificatorBundle\Service\NotifierFacade;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -32,17 +33,13 @@ final class NotificationWidgetController extends AbstractController
     ) {
     }
 
-    #[Route('/wrap-notificator/form/{type}', name: 'wrap_notificator_form', methods: ['GET', 'POST'])]
+    #[Route('/wrap-notificator/form/{type}', name: 'wrap_notificator_form', methods: ['GET', 'POST'], requirements: ['type' => 'email'])]
     public function renderForm(Request $request, string $type): Response
     {
-        $dto = match ($type) {
-            'email'     => new EmailNotificationDto(),
-            'sms'       => new SmsNotificationDto(),
-            'chat'      => new ChatNotificationDto(),
-            'browser'   => new BrowserNotificationDto(),
-            'push'      => new PushNotificationDto(),
-            default     => throw new \InvalidArgumentException("Unknown notification type: $type"),
-        };
+        if ($type !== 'email') {
+            throw new NotFoundHttpException();
+        }
+        $dto = new EmailNotificationDto();
 
         $data = $request->query->all();
         foreach ($data as $key => $value) {
@@ -82,9 +79,12 @@ final class NotificationWidgetController extends AbstractController
 
             if ($status === null && $this->container->has('limiter.wrap_notificator_form_ip')) {
                 $ip = (string) ($request->getClientIp() ?? 'unknown');
-                $limiter = $this->container->get('limiter.wrap_notificator_form_ip');
+                $rateLimiter = $this->container->get('limiter.wrap_notificator_form_ip');
+                $limiter = is_object($rateLimiter) && method_exists($rateLimiter, 'create')
+                    ? $rateLimiter->create($ip)
+                    : $rateLimiter;
                 if (is_object($limiter) && method_exists($limiter, 'consume')) {
-                    $limit = $limiter->consume(1, $ip);
+                    $limit = $limiter->consume(1);
                     if (is_object($limit) && method_exists($limit, 'isAccepted') && $limit->isAccepted() === false) {
                         if (method_exists($limit, 'getRetryAfter')) {
                             $retryAfter = $limit->getRetryAfter();
@@ -112,7 +112,7 @@ final class NotificationWidgetController extends AbstractController
                     }
                 }
                 if (!is_string($siteName) || trim($siteName) === '') {
-                    $siteName = (string) ($request->getHost() ?? '');
+                    $siteName = $request->getHost();
                 }
 
                 $siteUrl = null;

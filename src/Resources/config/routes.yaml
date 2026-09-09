@@ -5,4 +5,4 @@ wrap_notificator_form:
     controller: Neox\WrapNotificatorBundle\Controller\NotificationWidgetController::renderForm
     methods: [GET, POST]
     requirements:
-        type: email|sms|chat|browser|push
+        type: email
