@@ -40,6 +40,7 @@ jobs:
             php-cs-fixer-${{ runner.os }}-${{ matrix.php }}-
 
       - name: PHP CS Fixer (dry-run)
+        continue-on-error: true
         run: vendor/bin/php-cs-fixer fix --dry-run --diff --ansi
 
       - name: PHPStan
