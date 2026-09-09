@@ -15,6 +15,9 @@ final class LiveFlashControllerSubscriber implements EventSubscriberInterface
     public const ATTR_TOPIC = '_wrap_notificator_live_flash_topic';
     public const ATTR_CONSUME = '_wrap_notificator_live_flash_consume';
 
+    /**
+     * @param array<string, mixed> $liveFlashConfig
+     */
     public function __construct(
         private readonly array $liveFlashConfig = [],
     ) {

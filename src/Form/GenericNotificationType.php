@@ -16,6 +16,7 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormTypeInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class GenericNotificationType extends AbstractType
@@ -104,22 +105,24 @@ final class GenericNotificationType extends AbstractType
             ]);
         }
 
-        $recaptchaType = null;
-
-        if (class_exists(\Karser\Recaptcha3Bundle\Form\Recaptcha3Type::class)) {
-            $recaptchaType = \Karser\Recaptcha3Bundle\Form\Recaptcha3Type::class;
-        } elseif (class_exists(\Karser\Recaptcha3Bundle\Form\Type\Recaptcha3Type::class)) {
-            $recaptchaType = \Karser\Recaptcha3Bundle\Form\Type\Recaptcha3Type::class;
-        }
-
-        if ($recaptchaType && class_exists(Recaptcha3::class) && !in_array('captcha', $excludeFields, true)) {
-            $builder->add('captcha', $recaptchaType, [
+        if (class_exists(Recaptcha3::class) && !in_array('captcha', $excludeFields, true)) {
+            $captchaOptions = [
                 'mapped' => false,
                 'label' => false,
                 'required' => false,
                 'constraints' => [new Recaptcha3()],
                 'action_name' => 'wrap_notificator_form',
-            ]);
+            ];
+
+            if (class_exists(\Karser\Recaptcha3Bundle\Form\Recaptcha3Type::class)) {
+                /** @var class-string<FormTypeInterface> $recaptchaType */
+                $recaptchaType = \Karser\Recaptcha3Bundle\Form\Recaptcha3Type::class;
+                $builder->add('captcha', $recaptchaType, $captchaOptions);
+            } elseif (class_exists(\Karser\Recaptcha3Bundle\Form\Type\Recaptcha3Type::class)) {
+                /** @var class-string<FormTypeInterface> $recaptchaType */
+                $recaptchaType = \Karser\Recaptcha3Bundle\Form\Type\Recaptcha3Type::class;
+                $builder->add('captcha', $recaptchaType, $captchaOptions);
+            }
         }
 
         if (!in_array('send', $excludeFields, true)) {

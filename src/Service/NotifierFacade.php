@@ -35,6 +35,7 @@ class NotifierFacade
     /**
      * @param array<string, mixed> $mercureConfig
      * @param array<string, mixed> $loggingConfig
+     * @param array<string, array<int, string>> $bccConfig
      */
     public function __construct(
         private readonly MessageFactory $factory,

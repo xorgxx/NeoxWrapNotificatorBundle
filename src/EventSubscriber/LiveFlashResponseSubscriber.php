@@ -6,11 +6,16 @@ namespace Neox\WrapNotificatorBundle\EventSubscriber;
 
 use Neox\WrapNotificatorBundle\Service\NotifierFacade;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 final class LiveFlashResponseSubscriber implements EventSubscriberInterface
 {
+    /**
+     * @param array<string, mixed> $mercureConfig
+     * @param array<string, mixed> $liveFlashConfig
+     */
     public function __construct(
         private readonly NotifierFacade $facade,
         private readonly array $mercureConfig = [],
@@ -51,17 +56,17 @@ final class LiveFlashResponseSubscriber implements EventSubscriberInterface
             return;
         }
 
+        if (!$session instanceof FlashBagAwareSessionInterface) {
+            return;
+        }
+
         $consume = (bool) $request->attributes->get(LiveFlashControllerSubscriber::ATTR_CONSUME, (bool) ($this->liveFlashConfig['consume'] ?? true));
 
         $flashBag = $session->getFlashBag();
         if ($consume) {
             $flashes = $flashBag->all();
         } else {
-            if (method_exists($flashBag, 'peekAll')) {
-                $flashes = $flashBag->peekAll();
-            } else {
-                $flashes = $flashBag->all();
-            }
+            $flashes = $flashBag->peekAll();
         }
 
         if (!is_array($flashes) || $flashes === []) {

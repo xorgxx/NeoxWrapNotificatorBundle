@@ -29,6 +29,9 @@ final class WrapNotifyExtension extends AbstractExtension
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getConfig(): array
     {
         return $this->wrap_notificator;
