@@ -1,0 +1,33 @@
+# Example configuration for Wrap Notificator Bundle
+# Place this file under your application's config/packages/wrap_notificator.yaml
+# This bundle is mostly zero-config; make sure your DSNs and services are configured.
+
+# Mailer DSN example
+# MAILER_DSN="smtp://localhost:1025"
+
+# Notifier transports examples (Slack, Telegram, Twilio, etc.)
+# For Slack:
+# SLACK_DSN="slack://xoxb-your-token@default?channel=my-channel"
+# For Telegram:
+# TELEGRAM_DSN="telegram://bot-token@default?channel=@my_channel"
+# For Twilio SMS:
+# TWILIO_DSN="twilio://SID:TOKEN@default?from=%2B33600000000"
+
+# Mercure Hub configuration
+# MERCURE_URL="http://localhost:3000/.well-known/mercure"
+# MERCURE_PUBLIC_URL="http://localhost:3000/.well-known/mercure"
+# MERCURE_JWT_SECRET="!ChangeMe!"
+
+# Web Push VAPID keys
+# VAPID_PUBLIC_KEY="yourPublicKey"
+# VAPID_PRIVATE_KEY="yourPrivateKey"
+# VAPID_SUBJECT="mailto:you@example.com"
+
+# Corrélation & Idempotence (déduplication)
+# Par défaut, le bundle utilise un repository PSR-6 (cache.app) s'il est disponible,
+# avec fallback mémoire sinon. Vous pouvez forcer l'un ou l'autre via un alias de service :
+#
+# services:
+#   WrapNotificatorBundle\Contract\DedupeRepositoryInterface: '@WrapNotificatorBundle\Infrastructure\Dedupe\CacheDedupeRepository'
+#   # ou
+#   # WrapNotificatorBundle\Contract\DedupeRepositoryInterface: '@WrapNotificatorBundle\Infrastructure\Dedupe\InMemoryDedupeRepository'

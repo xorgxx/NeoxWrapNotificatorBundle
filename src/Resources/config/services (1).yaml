@@ -1,0 +1,99 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    # Core factory and sender
+    Neox\WrapNotificatorBundle\Notification\MessageFactory:
+        arguments:
+            $defaultFrom: '%wrap_notificator.default_senders.email%'
+
+    Neox\WrapNotificatorBundle\Notification\TypedSender:
+        arguments:
+            $mailer: '@?mailer'
+            $chatter: '@?chatter'
+            $texter: '@?texter'
+            $hub: '@?mercure.hub.default'
+            $webPush: '@?Minishlink\WebPush\WebPush'
+
+    # Dedupe repositories
+    Neox\WrapNotificatorBundle\Infrastructure\Dedupe\InMemoryDedupeRepository: ~
+
+    Neox\WrapNotificatorBundle\Infrastructure\Dedupe\CacheDedupeRepository:
+        arguments:
+            $cache: '@?cache.app'
+
+    # Prefer Cache repository when available
+    Neox\WrapNotificatorBundle\Contract\DedupeRepositoryInterface: '@Neox\WrapNotificatorBundle\Infrastructure\Dedupe\CacheDedupeRepository'
+
+    # Logging
+    Neox\WrapNotificatorBundle\Infrastructure\Logging\PsrNotificationLogger: ~
+
+    # Default implementation for logging (can be overridden by the user)
+    Neox\WrapNotificatorBundle\Contract\NotificationLoggerInterface: '@Neox\WrapNotificatorBundle\Infrastructure\Logging\PsrNotificationLogger'
+
+    # Facade
+    Neox\WrapNotificatorBundle\Service\NotifierFacade:
+        arguments:
+            $dedupe: '@?Neox\WrapNotificatorBundle\Contract\DedupeRepositoryInterface'
+            $bus: '@?messenger.bus.default'
+            $validator: '@?validator'
+            $formFactory: '@?form.factory'
+            $logger: '@Neox\WrapNotificatorBundle\Contract\NotificationLoggerInterface'
+            $hub: '@?mercure.hub.default'
+            $mercureConfig: '%wrap_notificator.mercure%'
+            $loggingConfig: '%wrap_notificator.logging%'
+            $bccConfig: '%wrap_notificator.bcc%'
+
+    # Controllers
+    Neox\WrapNotificatorBundle\Controller\NotificationWidgetController:
+        arguments:
+            $config: '%wrap_notificator%'
+            $translator: '@translator'
+        public: true
+        tags: ['controller.service_arguments']
+
+    # Alias interface to implementation for sending
+    Neox\WrapNotificatorBundle\Contract\SenderInterface: '@Neox\WrapNotificatorBundle\Notification\TypedSender'
+
+    # Twig extension to expose Mercure listeners in Twig
+    Neox\WrapNotificatorBundle\Twig\WrapNotifyExtension:
+        arguments:
+            $wrap_notificator: '%wrap_notificator.mercure%'
+#            $enabled: '%wrap_notificator.mercure.enabled%'
+#            $turboEnabled: '%wrap_notificator.mercure.turbo_enabled%'
+        tags: ['twig.extension']
+
+    Neox\WrapNotificatorBundle\EventSubscriber\LiveFlashControllerSubscriber:
+        arguments:
+            $liveFlashConfig: '%wrap_notificator.live_flash%'
+        tags: ['kernel.event_subscriber']
+
+    Neox\WrapNotificatorBundle\EventSubscriber\LiveFlashResponseSubscriber:
+        arguments:
+            $mercureConfig: '%wrap_notificator.mercure%'
+            $liveFlashConfig: '%wrap_notificator.live_flash%'
+        tags: ['kernel.event_subscriber']
+
+    # CLI commands
+    Neox\WrapNotificatorBundle\Command\NotifyCommand:
+        tags: ['console.command']
+
+    # Messenger handler for deferred notifications
+    Neox\WrapNotificatorBundle\Message\Handler\DeferredNotificationHandler: ~
+
+    Neox\WrapNotificatorBundle\Command\DiagnoseCommand:
+        arguments:
+            $hub: '@?mercure.hub.default'
+            $bus: '@?messenger.bus.default'
+        tags: ['console.command']
+
+    Neox\WrapNotificatorBundle\Command\ConfigShowCommand:
+        arguments:
+            $config: '%wrap_notificator%'
+        tags: ['console.command']
+
+    Neox\WrapNotificatorBundle\Validator\Constraints\AttachmentsValidationValidator:
+        arguments:
+            $config: '%wrap_notificator.attachments_validation%'
+        tags: ['validator.constraint_validator']

@@ -1,0 +1,86 @@
+{#
+    Modale generique Bootstrap 5 + Stimulus pour formulaires de notification
+    
+    A inclure UNE SEULE FOIS dans votre base.html.twig :
+    {% include '@WrapNotificator/widget/modal_stimulus.html.twig' %}
+    
+    Utilisation :
+    - Fonctionne avec tous les formulaires Symfony (bundle + projet)
+    - Chargement AJAX du contenu
+    - Gestion automatique des erreurs de validation
+    - Fermeture automatique apres succes
+    - Compatible avec Canvas
+    - Utilise automatiquement le theme configure (force_theme, toast_theme)
+    
+    Exemple de bouton declencheur :
+    <button 
+        type="button" 
+        class="btn btn-primary"
+        onclick="document.dispatchEvent(new CustomEvent('notify-modal:open', {
+            detail: {
+                url: '{{ path('wrap_notificator_form', {type: 'email'}) }}',
+                title: 'Envoyer un Email'
+            }
+        }))"
+    >
+        Envoyer Email
+    </button>
+#}
+
+{% set config = wrap_notify_config() %}
+{% set ui = config.ui|default({}) %}
+{% set forceTheme = ui.force_theme|default('auto') %}
+{% set toastTheme = ui.toast_theme|default('default') %}
+{% set isDark = forceTheme == 'dark' %}
+{% set isGoogle = toastTheme == 'google' %}
+
+<div 
+    id="notifyModal" 
+    class="modal fade{% if isDark %} modal-dark{% endif %}{% if isGoogle %} modal-google{% endif %}" 
+    tabindex="-1" 
+    aria-labelledby="notifyModalLabel" 
+    aria-hidden="true"
+    data-controller="notify-modal"
+    {% if isDark %}data-bs-theme="dark"{% endif %}
+>
+    <div class="modal-dialog">
+        <div class="modal-content{% if isDark %} bg-dark text-white{% endif %}">
+            <div class="modal-header{% if isDark %} bg-dark text-white border-secondary{% endif %}">
+                <h5 class="modal-title{% if isDark %} text-white{% endif %}" id="notifyModalLabel" data-notify-modal-target="title">
+                    Notification
+                </h5>
+                <button type="button" class="btn-close{% if isDark %} btn-close-white{% endif %}" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body{% if isDark %} bg-dark text-white{% endif %}" data-notify-modal-target="body">
+                <div class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer{% if isDark %} bg-dark border-secondary{% endif %}">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if isGoogle %}
+<style>
+.modal-google .modal-content {
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+.modal-google .modal-header {
+    border-bottom: none;
+    padding: 20px 24px 0;
+}
+.modal-google .modal-body {
+    padding: 20px 24px;
+}
+.modal-google .modal-footer {
+    border-top: none;
+    padding: 0 24px 20px;
+}
+</style>
+{% endif %}

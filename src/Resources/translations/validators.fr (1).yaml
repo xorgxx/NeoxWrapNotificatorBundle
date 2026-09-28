@@ -1,0 +1,4 @@
+wrap_notificator:
+  attachments:
+    too_many_files: 'Trop de pièces jointes.'
+    invalid_file: 'Pièce jointe invalide.'

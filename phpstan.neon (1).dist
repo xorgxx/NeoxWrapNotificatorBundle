@@ -1,0 +1,15 @@
+parameters:
+  level: 7
+  paths:
+    - src
+    - tests
+  checkMissingIterableValueType: true
+  checkGenericClassInNonGenericObjectType: true
+  checkMissingCallableSignature: true
+  reportUnmatchedIgnoredErrors: false
+  ignoreErrors:
+    - '#final classes cannot be doubled#'
+    -
+      message: '#Call to an undefined method\s+Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeParentInterface::booleanNode#'
+      paths:
+        - src/DependencyInjection/Configuration.php
