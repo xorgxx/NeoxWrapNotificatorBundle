@@ -82,6 +82,9 @@ services:
     # Messenger handler for deferred notifications
     Neox\WrapNotificatorBundle\Message\Handler\DeferredNotificationHandler: ~
 
+    # Messenger handler for the diagnose ping
+    Neox\WrapNotificatorBundle\Message\Handler\DiagPingHandler: ~
+
     Neox\WrapNotificatorBundle\Command\DiagnoseCommand:
         arguments:
             $hub: '@?mercure.hub.default'

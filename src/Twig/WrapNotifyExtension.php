@@ -101,12 +101,21 @@ final class WrapNotifyExtension extends AbstractExtension
         $payloadJs = json_encode($payload, JSON_THROW_ON_ERROR);
         $titleJs = json_encode($title, JSON_THROW_ON_ERROR);
         $useQueueJs = $useQueue ? 'true' : 'false';
+        // Unique per render: lets us skip replays when Turbo restores a cached snapshot
+        $nonceJs = json_encode(bin2hex(random_bytes(8)), JSON_THROW_ON_ERROR);
 
         return <<<HTML
 <script type="module">
     const payload = {$payloadJs};
     const title = {$titleJs};
     const useQueue = {$useQueueJs};
+    const nonce = {$nonceJs};
+
+    // Turbo re-executes body scripts when restoring cached snapshots; fire each payload only once.
+    window.__wrapFlashesFired = window.__wrapFlashesFired || new Set();
+    if (window.__wrapFlashesFired.size > 50) { window.__wrapFlashesFired.clear(); }
+    const alreadyFired = window.__wrapFlashesFired.has(nonce);
+    if (!alreadyFired) { window.__wrapFlashesFired.add(nonce); }
 
     const fire = (item) => {
         const opts = { icon: item.type, title: title || '', message: item.message };
@@ -119,8 +128,10 @@ final class WrapNotifyExtension extends AbstractExtension
         console.warn('[WrapNotificator] toast helpers not available (include wrap_notify_bootstrap() first).');
     };
 
-    for (const item of payload) {
-        fire(item);
+    if (!alreadyFired) {
+        for (const item of payload) {
+            fire(item);
+        }
     }
 </script>
 HTML;
@@ -199,6 +210,7 @@ HTML;
             json_encode($forceTheme, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
             json_encode($toastTheme, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
         ). <<<'HTML'
+<div id="wrap-toast-container" data-turbo-permanent></div>
 <script type="module">
     // Subscribe to Mercure topics. Uses EventSource with credentials to support JWT subscriber cookie
     function subscribeMercure(baseUrl, topics = [], onMessage = null, options = {}) {
@@ -215,11 +227,33 @@ HTML;
                 ? !!options.withCredentials
                 : false;
 
+            // Turbo-aware registry: at most one open EventSource per URL, all closed
+            // before Turbo caches the page (pagehide/beforeunload never fire under Turbo Drive).
+            const registry = window.__wrapMercureRegistry = window.__wrapMercureRegistry || { sources: new Map(), installed: false };
+            if (!registry.installed) {
+                registry.installed = true;
+                const closeAll = () => {
+                    for (const src of registry.sources.values()) { try { src.close(); } catch (_) {} }
+                    registry.sources.clear();
+                };
+                document.addEventListener('turbo:before-cache', closeAll);
+                window.addEventListener('pagehide', closeAll);
+                window.addEventListener('beforeunload', closeAll);
+            }
+
+            const registryKey = url.toString() + '|' + (withCreds ? '1' : '0');
+            const previous = registry.sources.get(registryKey);
+            if (previous) {
+                try { previous.close(); } catch (_) {}
+                registry.sources.delete(registryKey);
+            }
+
             const es = new EventSource(url.toString(), { withCredentials: withCreds });
+            registry.sources.set(registryKey, es);
 
             // Graceful shutdown on page unload to avoid spurious console errors during refresh/navigation
             let isUnloading = false;
-            const closeES = () => { try { es.close(); } catch(_) {} };
+            const closeES = () => { try { es.close(); } catch(_) {} registry.sources.delete(registryKey); };
             window.addEventListener('pagehide', () => { isUnloading = true; closeES(); });
             window.addEventListener('beforeunload', () => { isUnloading = true; closeES(); });
 
@@ -267,6 +301,8 @@ HTML;
             container.id = 'wrap-toast-container';
             document.body.appendChild(container);
         }
+        // Survive Turbo body swaps: Turbo carries data-turbo-permanent elements over renders
+        container.setAttribute('data-turbo-permanent', '');
         // Apply positioning
         const pos = String(position || 'top-right').toLowerCase();
         // reset
