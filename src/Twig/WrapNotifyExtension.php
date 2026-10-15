@@ -77,7 +77,7 @@ final class WrapNotifyExtension extends AbstractExtension
 
         $payload = [];
         foreach ($flashes as $type => $messages) {
-            if (!is_string($type) || $type === '') {
+            if ($type === '') {
                 continue;
             }
             if ($only !== null && !in_array($type, $only, true)) {

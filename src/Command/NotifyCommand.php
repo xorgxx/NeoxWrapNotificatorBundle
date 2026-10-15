@@ -236,7 +236,7 @@ HELP);
         if (is_string($sendAt) && $sendAt !== '') {
             // Accept ISO8601 (DATE_ATOM) or common "Y-m-d H:i[:s]" (local timezone)
             $dt = \DateTimeImmutable::createFromFormat(DATE_ATOM, $sendAt) ?: new \DateTimeImmutable($sendAt);
-            if ($dt instanceof \DateTimeImmutable && $dt > new \DateTimeImmutable('now')) {
+            if ($dt > new \DateTimeImmutable('now')) {
                 return $dt;
             }
             return null;
@@ -316,7 +316,7 @@ HELP);
     }
 
     /**
-     * @param array<int, string>|null $pairs
+     * @param array<array-key, mixed>|null $pairs
      * @return array<string,string>
      */
     private function parseKeyValueArray(?array $pairs): array

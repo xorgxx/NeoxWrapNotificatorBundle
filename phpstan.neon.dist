@@ -3,9 +3,8 @@ parameters:
   paths:
     - src
     - tests
-  checkMissingIterableValueType: true
-  checkGenericClassInNonGenericObjectType: true
-  checkMissingCallableSignature: true
+  # checkMissingIterableValueType / checkGenericClassInNonGenericObjectType /
+  # checkMissingCallableSignature are always-on in PHPStan 2.x (params removed).
   reportUnmatchedIgnoredErrors: false
   ignoreErrors:
     - '#final classes cannot be doubled#'

@@ -69,7 +69,7 @@ final class LiveFlashResponseSubscriber implements EventSubscriberInterface
             $flashes = $flashBag->peekAll();
         }
 
-        if (!is_array($flashes) || $flashes === []) {
+        if ($flashes === []) {
             return;
         }
 

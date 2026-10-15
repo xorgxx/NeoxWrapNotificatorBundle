@@ -32,7 +32,7 @@ final class NotifyCommandDedupeTest extends TestCase
         };
 
         $app = new Application();
-        $app->add(new NotifyCommand($facade));
+        $app->addCommand(new NotifyCommand($facade));
         $command = $app->find('notify:send');
         $tester = new CommandTester($command);
 

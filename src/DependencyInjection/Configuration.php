@@ -23,10 +23,6 @@ final class Configuration implements ConfigurationInterface
         /** @var \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition $mercure */
         $mercure->addDefaultsIfNotSet();
         $mercureChildren = $mercure->children();
-        if (!$mercureChildren instanceof \Symfony\Component\Config\Definition\Builder\NodeBuilder) {
-            // Fallback for static analysis edge case
-            return $treeBuilder;
-        }
 
         // @phpstan-ignore-next-line
         $mercureChildren

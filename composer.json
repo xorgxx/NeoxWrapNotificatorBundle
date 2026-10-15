@@ -24,7 +24,7 @@
     "phpspec/prophecy": "^1.18",
     "phpspec/prophecy-phpunit": "^2.0",
     "friendsofphp/php-cs-fixer": "^3.64",
-    "phpstan/phpstan": "^1.11",
+    "phpstan/phpstan": "^1.12 || ^2.0",
     "symfony/slack-notifier": "^7.4 || ^8.0",
     "symfony/telegram-notifier": "^7.4 || ^8.0",
     "symfony/messenger": "^7.4 || ^8.0",

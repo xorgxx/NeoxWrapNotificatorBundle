@@ -431,13 +431,11 @@ class NotifierFacade
     {
         $attachments = [];
         foreach ($uploadedFiles as $file) {
-            if ($file instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
-                $attachments[] = [
-                    'path' => $file->getPathname(),
-                    'name' => $file->getClientOriginalName(),
-                    'mime' => $file->getMimeType() ?? 'application/octet-stream'
-                ];
-            }
+            $attachments[] = [
+                'path' => $file->getPathname(),
+                'name' => $file->getClientOriginalName(),
+                'mime' => $file->getMimeType() ?? 'application/octet-stream'
+            ];
         }
         return $attachments;
     }

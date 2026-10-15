@@ -240,7 +240,7 @@ final class MessageFactory
             $cid = $item['cid'] ?? ($inline ? (pathinfo($name, PATHINFO_FILENAME) ?: uniqid('cid_', true)) : null);
             $icon = $this->guessIcon($mime, $name);
 
-            if ($mode === 'path' && $path !== null) {
+            if ($mode === 'path') {
                 return [
                     'mode' => 'path',
                     'path' => $path,
@@ -250,17 +250,14 @@ final class MessageFactory
                     'icon' => $icon
                 ];
             }
-            if ($mode === 'bin' && $content !== null) {
-                return [
-                    'mode' => 'bin',
-                    'content' => $content,
-                    'name' => $name,
-                    'mime' => $mime,
-                    'cid' => $cid,
-                    'icon' => $icon
-                ];
-            }
-            return null;
+            return [
+                'mode' => 'bin',
+                'content' => $content,
+                'name' => $name,
+                'mime' => $mime,
+                'cid' => $cid,
+                'icon' => $icon
+            ];
         }
 
         return null;

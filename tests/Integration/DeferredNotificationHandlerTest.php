@@ -37,7 +37,7 @@ final class DeferredNotificationHandlerTest extends TestCase
         $msg = new DeferredNotification('email', $payload, [], []);
 
         ($handler)($msg);
-        self::assertTrue(true); // if no exception and expected call happened, test passes
+        $this->addToAssertionCount(1); // if no exception and expected call happened, test passes
     }
 
     #[Test]
@@ -59,7 +59,7 @@ final class DeferredNotificationHandlerTest extends TestCase
         $msg = new DeferredNotification('sms', $payload, [], []);
 
         ($handler)($msg);
-        self::assertTrue(true);
+        $this->addToAssertionCount(1);
     }
 
     #[Test]
@@ -83,7 +83,7 @@ final class DeferredNotificationHandlerTest extends TestCase
         $msg = new DeferredNotification('chat', $payload, [], []);
 
         ($handler)($msg);
-        self::assertTrue(true);
+        $this->addToAssertionCount(1);
     }
 
     #[Test]
@@ -108,6 +108,6 @@ final class DeferredNotificationHandlerTest extends TestCase
         $msg = new DeferredNotification('chat', $payload, [], []);
 
         ($handler)($msg);
-        self::assertTrue(true);
+        $this->addToAssertionCount(1);
     }
 }

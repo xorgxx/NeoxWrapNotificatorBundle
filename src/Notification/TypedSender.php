@@ -122,7 +122,7 @@ final class TypedSender implements \Neox\WrapNotificatorBundle\Contract\SenderIn
                 return DeliveryStatus::sent('push', $push->endpoint);
             }
 
-            $reason = method_exists($report, 'getReason') ? $report->getReason() : 'Unknown failure';
+            $reason = $report->getReason();
             return DeliveryStatus::failed('push', $reason);
         } catch (\Throwable $e) {
             return DeliveryStatus::failed('push', $e->getMessage());

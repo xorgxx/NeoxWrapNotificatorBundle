@@ -16,7 +16,6 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormTypeInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class GenericNotificationType extends AbstractType
@@ -115,13 +114,11 @@ final class GenericNotificationType extends AbstractType
             ];
 
             if (class_exists(\Karser\Recaptcha3Bundle\Form\Recaptcha3Type::class)) {
-                /** @var class-string<FormTypeInterface> $recaptchaType */
-                $recaptchaType = \Karser\Recaptcha3Bundle\Form\Recaptcha3Type::class;
-                $builder->add('captcha', $recaptchaType, $captchaOptions);
+                // @phpstan-ignore-next-line — optional bundle: guaranteed FormTypeInterface at runtime
+                $builder->add('captcha', \Karser\Recaptcha3Bundle\Form\Recaptcha3Type::class, $captchaOptions);
             } elseif (class_exists(\Karser\Recaptcha3Bundle\Form\Type\Recaptcha3Type::class)) {
-                /** @var class-string<FormTypeInterface> $recaptchaType */
-                $recaptchaType = \Karser\Recaptcha3Bundle\Form\Type\Recaptcha3Type::class;
-                $builder->add('captcha', $recaptchaType, $captchaOptions);
+                // @phpstan-ignore-next-line — optional bundle: guaranteed FormTypeInterface at runtime
+                $builder->add('captcha', \Karser\Recaptcha3Bundle\Form\Type\Recaptcha3Type::class, $captchaOptions);
             }
         }
 

@@ -44,7 +44,7 @@ final class LiveFlashControllerSubscriber implements EventSubscriberInterface
         $reflectionMethod = null;
         $reflectionClass = null;
 
-        if (is_array($controller) && isset($controller[0], $controller[1]) && is_object($controller[0]) && is_string($controller[1])) {
+        if (is_array($controller) && is_object($controller[0])) {
             $reflectionClass = new \ReflectionClass($controller[0]);
             if ($reflectionClass->hasMethod($controller[1])) {
                 $reflectionMethod = $reflectionClass->getMethod($controller[1]);

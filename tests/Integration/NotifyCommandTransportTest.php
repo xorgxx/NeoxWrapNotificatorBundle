@@ -51,7 +51,7 @@ final class NotifyCommandTransportTest extends TestCase
         });
 
         $app = new Application();
-        $app->add(new NotifyCommand($facade));
+        $app->addCommand(new NotifyCommand($facade));
         $command = $app->find('notify:send');
 
         return new CommandTester($command);

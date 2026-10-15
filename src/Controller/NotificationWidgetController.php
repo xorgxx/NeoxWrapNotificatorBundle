@@ -49,7 +49,7 @@ final class NotificationWidgetController extends AbstractController
         }
 
         $defaultRecipients = $this->config['default_recipients'] ?? [];
-        if (isset($defaultRecipients[$type]) && property_exists($dto, 'recipient')) {
+        if (isset($defaultRecipients[$type])) {
             $dto->recipient = $defaultRecipients[$type];
         }
 
@@ -59,7 +59,7 @@ final class NotificationWidgetController extends AbstractController
         $formOptions = [];
         
         $exclude = $request->query->get('exclude', '');
-        if (is_string($exclude) && $exclude !== '') {
+        if ($exclude !== '') {
             $exclude = array_map('trim', explode(',', $exclude));
         } else {
             $exclude = [];
@@ -98,7 +98,7 @@ final class NotificationWidgetController extends AbstractController
             }
 
             // Apply email template for contact forms if enabled
-            if ($status === null && $dto instanceof EmailNotificationDto && ($this->config['email_template']['enabled'] ?? true)) {
+            if ($status === null && ($this->config['email_template']['enabled'] ?? true)) {
                 $dto->template = $this->config['email_template']['template'] ?? '@WrapNotificator/email/contact_form.html.twig';
                 $siteName = $this->config['site_name'] ?? null;
                 if (!is_string($siteName) || trim($siteName) === '') {

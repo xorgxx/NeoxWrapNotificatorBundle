@@ -46,38 +46,12 @@ final class NotifierFacadeTest extends TestCase
 
     private function extractChatTransport(ChatMessage $chat): ?string
     {
-        if (method_exists($chat, 'getTransport')) {
-            /** @phpstan-ignore-next-line */
-            return $chat->getTransport();
-        }
-        $ref = new \ReflectionObject($chat);
-        foreach (['transport'] as $propName) {
-            if ($ref->hasProperty($propName)) {
-                $p = $ref->getProperty($propName);
-                $p->setAccessible(true);
-                $v = $p->getValue($chat);
-                return is_string($v) ? $v : null;
-            }
-        }
-        return null;
+        return $chat->getTransport();
     }
 
-    private function extractChatSubject(ChatMessage $chat): ?string
+    private function extractChatSubject(ChatMessage $chat): string
     {
-        if (method_exists($chat, 'getSubject')) {
-            /** @phpstan-ignore-next-line */
-            return $chat->getSubject();
-        }
-        $ref = new \ReflectionObject($chat);
-        foreach (['subject'] as $propName) {
-            if ($ref->hasProperty($propName)) {
-                $p = $ref->getProperty($propName);
-                $p->setAccessible(true);
-                $v = $p->getValue($chat);
-                return is_string($v) ? $v : null;
-            }
-        }
-        return null;
+        return $chat->getSubject();
     }
 
     protected function setUp(): void
@@ -97,7 +71,7 @@ final class NotifierFacadeTest extends TestCase
         $facade = new NotifierFacade($this->factory, $sender);
 
         $status = $facade->notifySms('Ping', '+33600000000');
-        $arr = method_exists($status, 'toArray') ? $status->toArray() : ['status' => $status->status ?? null];
+        $arr = $status->toArray();
 
         self::assertSame('sent', $arr['status']);
     }
@@ -117,7 +91,7 @@ final class NotifierFacadeTest extends TestCase
                 }
                 $message = $envelope->getMessage();
                 // The message is DeferredNotification
-                if (!\is_object($message) || $message::class !== 'Neox\\WrapNotificatorBundle\\Message\\DeferredNotification') {
+                if ($message::class !== 'Neox\\WrapNotificatorBundle\\Message\\DeferredNotification') {
                     return false;
                 }
                 $delayStamp = $envelope->last(DelayStamp::class);
@@ -263,7 +237,7 @@ final class NotifierFacadeTest extends TestCase
                 if ($transport !== null && $transport !== 'test') {
                     return false;
                 }
-                if ($subject !== null && $subject !== 'S') {
+                if ($subject !== 'S') {
                     return false;
                 }
                 return true;

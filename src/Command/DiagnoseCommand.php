@@ -94,9 +94,7 @@ final class DiagnoseCommand extends Command
                     );
                     $id = $this->hub->publish($update);
                     $report['mercure']['published'] = true;
-                    if ($id !== null) {
-                        $report['mercure']['id'] = $id;
-                    }
+                    $report['mercure']['id'] = $id;
                 } catch (\Throwable $e) {
                     $report['mercure']['error'] = $e->getMessage();
                     $exitOk = false;
