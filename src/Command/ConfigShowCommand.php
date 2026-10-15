@@ -65,7 +65,7 @@ HELP);
         // Filter by section if requested
         if (is_string($section) && $section !== '') {
             $sectionKey = strtolower(trim($section));
-            
+
             // Special case: 'ui' is nested under 'mercure'
             if ($sectionKey === 'ui') {
                 $displayConfig = $this->config['mercure']['ui'] ?? [];
@@ -132,41 +132,41 @@ HELP);
     private function displayMercureSection(SymfonyStyle $io, array $mercure): void
     {
         $io->section('Mercure');
-        
+
         $enabled = $mercure['enabled'] ?? false;
         $io->writeln(sprintf('%s Enabled: %s', $enabled ? '✔' : '✖', $enabled ? 'YES' : 'NO'));
-        
+
         if (isset($mercure['public_url'])) {
             $io->writeln(sprintf('• Public URL: %s', (string) $mercure['public_url']));
         }
-        
+
         if (isset($mercure['notify_status'])) {
             $io->writeln(sprintf('• Notify Status: %s', $mercure['notify_status'] ? 'YES' : 'NO'));
         }
-        
+
         if (isset($mercure['auto_inject'])) {
             $io->writeln(sprintf('• Auto Inject: %s', $mercure['auto_inject'] ? 'YES' : 'NO'));
         }
-        
+
         if (isset($mercure['turbo_enabled'])) {
             $io->writeln(sprintf('• Turbo Enabled: %s', $mercure['turbo_enabled'] ? 'YES' : 'NO'));
         }
-        
+
         if (isset($mercure['only_authenticated'])) {
             $io->writeln(sprintf('• Only Authenticated: %s', $mercure['only_authenticated'] ? 'YES' : 'NO'));
         }
-        
+
         if (isset($mercure['with_credentials_default'])) {
             $io->writeln(sprintf('• With Credentials Default: %s', $mercure['with_credentials_default'] ? 'YES' : 'NO'));
         }
-        
+
         if (isset($mercure['default_topics']) && is_array($mercure['default_topics'])) {
             $io->writeln('• Default Topics:');
             foreach ($mercure['default_topics'] as $topic) {
                 $io->writeln(sprintf('  - %s', (string) $topic));
             }
         }
-        
+
         if (isset($mercure['ui']) && is_array($mercure['ui'])) {
             $this->displayUiSection($io, $mercure['ui']);
         }
@@ -178,7 +178,7 @@ HELP);
     private function displayUiSection(SymfonyStyle $io, array $ui): void
     {
         $io->section('UI Configuration');
-        
+
         if (isset($ui['renderer'])) {
             $renderer = (string) $ui['renderer'];
             $icon = match ($renderer) {
@@ -188,32 +188,32 @@ HELP);
                 default => '•',
             };
             $io->writeln(sprintf('%s Renderer: %s', $icon, strtoupper($renderer)));
-            
+
             if ($renderer === 'auto') {
                 $io->note('Mode AUTO: iziToast si disponible, sinon Bootstrap 5');
             }
         }
-        
+
         if (isset($ui['force_theme'])) {
             $io->writeln(sprintf('• Force Theme: %s', (string) $ui['force_theme']));
         }
-        
+
         if (isset($ui['toast_theme'])) {
             $io->writeln(sprintf('• Toast Theme: %s', (string) $ui['toast_theme']));
         }
-        
+
         if (isset($ui['external_css'])) {
             $io->writeln(sprintf('• External CSS: %s', $ui['external_css'] ? 'YES' : 'NO'));
         }
-        
+
         if (isset($ui['auto_link_css'])) {
             $io->writeln(sprintf('• Auto Link CSS: %s', $ui['auto_link_css'] ? 'YES' : 'NO'));
         }
-        
+
         if (isset($ui['asset_path'])) {
             $io->writeln(sprintf('• Asset Path: %s', (string) $ui['asset_path']));
         }
-        
+
         if (isset($ui['asset_fallback_prefix'])) {
             $io->writeln(sprintf('• Asset Fallback Prefix: %s', (string) $ui['asset_fallback_prefix']));
         }
@@ -225,7 +225,7 @@ HELP);
     private function displayLoggingSection(SymfonyStyle $io, array $logging): void
     {
         $io->section('Logging');
-        
+
         $enabled = $logging['enabled'] ?? false;
         $io->writeln(sprintf('%s Enabled: %s', $enabled ? '✔' : '✖', $enabled ? 'YES' : 'NO'));
     }
@@ -236,18 +236,18 @@ HELP);
     private function displayLiveFlashSection(SymfonyStyle $io, array $liveFlash): void
     {
         $io->section('Live Flash Messages');
-        
+
         $enabled = $liveFlash['enabled'] ?? false;
         $io->writeln(sprintf('%s Enabled: %s', $enabled ? '✔' : '✖', $enabled ? 'YES' : 'NO'));
-        
+
         if (isset($liveFlash['consume'])) {
             $io->writeln(sprintf('• Consume: %s', $liveFlash['consume'] ? 'YES' : 'NO'));
         }
-        
+
         if (isset($liveFlash['group_messages'])) {
             $io->writeln(sprintf('• Group Messages: %s', $liveFlash['group_messages'] ? 'YES' : 'NO'));
         }
-        
+
         if (isset($liveFlash['default_topic_prefix'])) {
             $io->writeln(sprintf('• Default Topic Prefix: %s', (string) $liveFlash['default_topic_prefix']));
         }

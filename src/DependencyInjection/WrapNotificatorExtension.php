@@ -19,7 +19,7 @@ final class WrapNotificatorExtension extends Extension
 
         // Expose full config array for CLI commands
         $container->setParameter('wrap_notificator', $config);
-        
+
         // Expose each top-level config key as a parameter
         foreach ($config as $key => $value) {
             $container->setParameter('wrap_notificator.'.$key, $value);

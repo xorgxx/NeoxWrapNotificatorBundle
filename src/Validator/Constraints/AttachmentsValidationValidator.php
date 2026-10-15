@@ -6,8 +6,8 @@ namespace Neox\WrapNotificatorBundle\Validator\Constraints;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraint;
-use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class AttachmentsValidationValidator extends ConstraintValidator

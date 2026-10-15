@@ -217,7 +217,7 @@ final class NotifierFacadeTest extends TestCase
             ->willReturn(DeliveryStatus::sent('chat'));
 
         $facade = new NotifierFacade($this->factory, $sender);
-        $obj = new class {
+        $obj = new class () {
             public string $foo = 'bar';
         };
         $status = $facade->notifyChat('test', $obj);

@@ -6,19 +6,14 @@ namespace Neox\WrapNotificatorBundle\Controller;
 
 use Neox\WrapNotificatorBundle\Form\GenericNotificationType;
 use Neox\WrapNotificatorBundle\Notification\DeliveryStatus;
-use Neox\WrapNotificatorBundle\Notification\Dto\BrowserNotificationDto;
-use Neox\WrapNotificatorBundle\Notification\Dto\ChatNotificationDto;
 use Neox\WrapNotificatorBundle\Notification\Dto\EmailNotificationDto;
-use Neox\WrapNotificatorBundle\Notification\Dto\PushNotificationDto;
-use Neox\WrapNotificatorBundle\Notification\Dto\SmsNotificationDto;
 use Neox\WrapNotificatorBundle\Service\NotifierFacade;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class NotificationWidgetController extends AbstractController
@@ -57,7 +52,7 @@ final class NotificationWidgetController extends AbstractController
         // If you need to auto-fill sender for specific use cases, configure it via query parameters
 
         $formOptions = [];
-        
+
         $exclude = $request->query->get('exclude', '');
         if ($exclude !== '') {
             $exclude = array_map('trim', explode(',', $exclude));
@@ -133,7 +128,7 @@ final class NotificationWidgetController extends AbstractController
                     'sender' => $dto->sender,
                     'subject' => $dto->subject,
                     'content' => $dto->content,
-                    'attachments' => array_map(fn($file) => [
+                    'attachments' => array_map(fn ($file) => [
                         'name' => $file->getClientOriginalName(),
                         'mime' => $file->getMimeType() ?? 'application/octet-stream'
                     ], $dto->attachments),
@@ -141,7 +136,7 @@ final class NotificationWidgetController extends AbstractController
                     'clientIp' => $request->getClientIp()
                 ];
             }
-            
+
             if ($status === null) {
                 $status = $this->facade->send($dto);
             }
@@ -173,7 +168,7 @@ final class NotificationWidgetController extends AbstractController
             }
 
             $this->addFlash($flashType, $flashMessage);
-            
+
             // For AJAX requests, return success response to trigger modal close
             if ($request->isXmlHttpRequest()) {
                 return new JsonResponse([

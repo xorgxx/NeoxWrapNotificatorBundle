@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Neox\WrapNotificatorBundle\Form;
 
 //use Karser\Recaptcha3Bundle\Form\Type\Recaptcha3Type;
-use Karser\Recaptcha3Bundle\Form\Recaptcha3Type;
 use Karser\Recaptcha3Bundle\Validator\Constraints\Recaptcha3;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;

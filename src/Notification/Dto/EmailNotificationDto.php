@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Neox\WrapNotificatorBundle\Notification\Dto;
 
-use Symfony\Component\Validator\Constraints as Assert;
 use Neox\WrapNotificatorBundle\Validator\Constraints\AttachmentsValidation;
+use Symfony\Component\Validator\Constraints as Assert;
 
 final class EmailNotificationDto implements NotificationDtoInterface
 {
