@@ -48,6 +48,15 @@ final class WrapNotificatorExtension extends Extension
         $locator = new FileLocator(__DIR__ . '/../Resources/config');
         $loader = new YamlFileLoader($container, $locator);
         $loader->load('services.yaml');
+
+        // Cookie abonné Mercure : opt-in via mercure.subscriber_cookie,
+        // sans effet si mercure est désactivé.
+        $mercure = is_array($config['mercure'] ?? null) ? $config['mercure'] : [];
+        if (!($mercure['enabled'] ?? true) || !($mercure['subscriber_cookie'] ?? false)) {
+            $container->removeDefinition(
+                \Neox\WrapNotificatorBundle\EventSubscriber\MercureAuthorizationCookieSubscriber::class
+            );
+        }
     }
 
 }

@@ -34,7 +34,8 @@
   "suggest": {
     "symfony/messenger": "For async notifications",
     "symfony/http-client": "Required by some transports and Mercure client",
-    "symfony/cache": "Provides a default PSR-6 cache pool (cache.app) used for deduplication"
+    "symfony/cache": "Provides a default PSR-6 cache pool (cache.app) used for deduplication",
+    "symfony/security-core": "Required when mercure.subscriber_cookie is enabled (subscriber JWT cookie for authenticated users)"
   },
   "autoload": {
     "psr-4": {

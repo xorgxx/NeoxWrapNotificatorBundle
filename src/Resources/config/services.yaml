@@ -75,6 +75,19 @@ services:
             $liveFlashConfig: '%wrap_notificator.live_flash%'
         tags: ['kernel.event_subscriber']
 
+    # Cookie d'autorisation abonné (mercure.subscriber_cookie).
+    # Services optionnels : Mercure absent → no-op ; security absent →
+    # seule la purge du cookie résiduel tourne.
+    Neox\WrapNotificatorBundle\EventSubscriber\MercureAuthorizationCookieSubscriber:
+        arguments:
+            $authorization: '@?Symfony\Component\Mercure\Authorization'
+            $hub: '@?mercure.hub.default'
+            $tokenStorage: '@?security.token_storage'
+            $grantProviders: !tagged_iterator wrap_notificator.mercure_grant_provider
+            $mercureConfig: '%wrap_notificator.mercure%'
+            $liveFlashConfig: '%wrap_notificator.live_flash%'
+        tags: ['kernel.event_subscriber']
+
     # CLI commands
     Neox\WrapNotificatorBundle\Command\NotifyCommand:
         tags: ['console.command']

@@ -42,6 +42,13 @@ final class Configuration implements ConfigurationInterface
             // true = chaque Update est marquée private (abonnés JWT seulement) ;
             // surcharge ponctuelle possible via $metadata['private'].
             ->booleanNode('private_default')->defaultFalse()->end()
+            // Cookie d'autorisation abonné : à chaque réponse d'un compte
+            // connecté, pose mercureAuthorization (JWT subscribe) avec les
+            // topics du bundle + ceux des MercureGrantProviderInterface
+            // tagués ; purgé si le navigateur arrive anonyme avec un
+            // cookie résiduel. Requis pour recevoir les updates privées
+            // — exige le hub joint same-origin (proxy /.well-known/mercure).
+            ->booleanNode('subscriber_cookie')->defaultFalse()->end()
             ->arrayNode('default_topics')
                 ->prototype('scalar')->end()
                 ->defaultValue(['geo_notificator/stream'])
