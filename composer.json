@@ -28,6 +28,7 @@
     "symfony/slack-notifier": "^7.4 || ^8.0",
     "symfony/telegram-notifier": "^7.4 || ^8.0",
     "symfony/messenger": "^7.4 || ^8.0",
+    "symfony/security-core": "^7.4 || ^8.0",
     "twig/twig": "^3.0",
     "symfony/framework-bundle": "^7.4 || ^8.0"
   },

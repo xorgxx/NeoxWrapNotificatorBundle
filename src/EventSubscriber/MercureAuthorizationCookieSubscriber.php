@@ -14,7 +14,6 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Mercure\Authorization;
 use Symfony\Component\Mercure\Exception\RuntimeException;
 use Symfony\Component\Mercure\HubInterface;
-use Symfony\Component\Mercure\Jwt\Grant;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 /**
@@ -40,7 +39,15 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 final class MercureAuthorizationCookieSubscriber implements EventSubscriberInterface
 {
     /**
+     * Nom du cookie posé par {@see Authorization} — constante privée
+     * upstream, non exposée par HubInterface dans les versions supportées.
+     */
+    private const COOKIE_NAME = 'mercureAuthorization';
+
+    /**
      * @param iterable<MercureGrantProviderInterface> $grantProviders
+     * @param array<string, mixed>                    $mercureConfig
+     * @param array<string, mixed>                    $liveFlashConfig
      */
     public function __construct(
         private readonly ?Authorization $authorization,
@@ -65,12 +72,11 @@ final class MercureAuthorizationCookieSubscriber implements EventSubscriberInter
         }
 
         $request = $event->getRequest();
-        $cookieName = $this->hub->getCookieName();
 
         if (null === $this->tokenStorage?->getToken()?->getUser()) {
             // Déconnexion : le navigateur présente encore le cookie →
             // on demande son expiration (Set-Cookie passé en même temps).
-            if ($request->cookies->has($cookieName)) {
+            if ($request->cookies->has(self::COOKIE_NAME)) {
                 try {
                     $this->authorization->clearCookie($request);
                 } catch (RuntimeException) {
@@ -82,7 +88,6 @@ final class MercureAuthorizationCookieSubscriber implements EventSubscriberInter
         }
 
         $topics = [];
-        $grants = [];
 
         // Topics natifs du bundle : canaux publics souscrits par le JS
         // + canal flash live spécifique à la session.
@@ -98,17 +103,13 @@ final class MercureAuthorizationCookieSubscriber implements EventSubscriberInter
         // Grants applicatifs : chaque provider autoconfigure-tagué
         // contribue ses topics métier (compagnies, identité…).
         foreach ($this->grantProviders as $provider) {
-            foreach ($provider->getGrants($request) as $grant) {
-                if ($grant instanceof Grant) {
-                    $grants[] = $grant;
-                } else {
-                    $topics[(string) $grant] = true;
-                }
+            foreach ($provider->getGrants($request) as $topic) {
+                $topics[(string) $topic] = true;
             }
         }
 
         try {
-            $this->authorization->setCookie($request, [...array_keys($topics), ...$grants]);
+            $this->authorization->setCookie($request, array_keys($topics));
         } catch (\Throwable $e) {
             // Hôte incompatible avec public_url ou autre erreur :
             // le privé est désactivé pour cette requête, pas de 500.

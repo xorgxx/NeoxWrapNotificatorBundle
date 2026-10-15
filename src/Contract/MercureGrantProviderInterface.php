@@ -6,7 +6,6 @@ namespace Neox\WrapNotificatorBundle\Contract;
 
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Mercure\Jwt\Grant;
 
 /**
  * Fournit des grants d'abonnement Mercure propres à l'application
@@ -28,7 +27,7 @@ interface MercureGrantProviderInterface
     /**
      * Topics autorisés pour l'utilisateur courant.
      *
-     * @return iterable<string|Grant>
+     * @return iterable<string>
      */
     public function getGrants(Request $request): iterable;
 }
