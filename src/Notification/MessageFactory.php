@@ -146,9 +146,9 @@ final class MessageFactory
     /**
      * @param array<string,mixed> $data
      */
-    public function browser(string $topic, array $data): BrowserPayload
+    public function browser(string $topic, array $data, bool $private = false): BrowserPayload
     {
-        return new BrowserPayload($topic, $data);
+        return new BrowserPayload($topic, $data, $private);
     }
 
     /**

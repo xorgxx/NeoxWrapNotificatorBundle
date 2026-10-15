@@ -87,6 +87,7 @@ final class TypedSender implements \Neox\WrapNotificatorBundle\Contract\SenderIn
             $update = new Update(
                 topics: $payload->topic,
                 data: $json,
+                private: $payload->private,
             );
             $id = $this->hub->publish($update);
             $idStr = (string) $id;

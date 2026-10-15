@@ -38,6 +38,10 @@ final class Configuration implements ConfigurationInterface
             // Default to env var if not explicitly configured in YAML
             ->scalarNode('public_url')->defaultValue('%env(string:MERCURE_PUBLIC_URL)%')->end()
             ->booleanNode('with_credentials_default')->defaultFalse()->end()
+            // Updates Mercure privées par défaut pour tous les notifyBrowser :
+            // true = chaque Update est marquée private (abonnés JWT seulement) ;
+            // surcharge ponctuelle possible via $metadata['private'].
+            ->booleanNode('private_default')->defaultFalse()->end()
             ->arrayNode('default_topics')
                 ->prototype('scalar')->end()
                 ->defaultValue(['geo_notificator/stream'])

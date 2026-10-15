@@ -326,6 +326,10 @@ class NotifierFacade
                 return $hit;
             }
 
+            // Update privée Mercure : metadata['private'] explicite, sinon
+            // le défaut global wrap_notificator.mercure.private_default.
+            $private = (bool) ($metadata['private'] ?? $this->mercureConfig['private_default'] ?? false);
+
             // Deferred scheduling
             if ($ctx?->deferAt instanceof \DateTimeImmutable) {
                 if ($fail = $this->requireBusOrFail('browser', $metadata, $ctx, 'Deferred send requires Messenger (async mode). MessageBus not available.')) {
@@ -334,6 +338,7 @@ class NotifierFacade
                 $payload = [
                     'topic' => $topic,
                     'data' => $data,
+                    'private' => $private,
                 ];
                 return $this->scheduleDeferredCommon('browser', $payload, $metadata, $ctx);
             }
@@ -343,17 +348,17 @@ class NotifierFacade
                 if ($fail = $this->requireBusOrFail('browser', $metadata, $ctx, 'Forcing transport requires Messenger. MessageBus not available.')) {
                     return $fail;
                 }
-                return $this->forcedTransportCommon('browser', $metadata, $ctx, function () use ($topic, $data) {
+                return $this->forcedTransportCommon('browser', $metadata, $ctx, function () use ($topic, $data, $private) {
                     $json = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
                     if ($json === false) {
                         $json = '{}';
                     }
-                    return new Update($topic, $json);
+                    return new Update($topic, $json, private: $private);
                 });
             }
 
             // Direct send
-            $payload = $this->factory->browser($topic, $data);
+            $payload = $this->factory->browser($topic, $data, $private);
             $status = $this->sender->sendBrowser($payload);
             return $this->finalize($status, $metadata, $ctx);
         } catch (\Throwable $e) {

@@ -45,7 +45,7 @@ final class DeferredNotificationHandler
                 $this->ensureDelivered($this->sender->sendChat($chat));
                 break;
             case 'browser':
-                $payload = $this->factory->browser((string)$p['topic'], (array)($p['data'] ?? []));
+                $payload = $this->factory->browser((string)$p['topic'], (array)($p['data'] ?? []), (bool)($p['private'] ?? false));
                 $this->ensureDelivered($this->sender->sendBrowser($payload));
                 break;
             case 'push':
